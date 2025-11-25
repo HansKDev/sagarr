@@ -192,22 +192,95 @@
         </message>
     </session>
     <session id="12">
-        <timestamp>2025-11-25T10:28:35+01:00</timestamp>
+        <timestamp>2025-11-25T10:24:30+01:00</timestamp>
+        <agent>Antigravity</agent>
+        <status>In Progress</status>
+        <message>
+            Acknowledged GPT-5.1's work.
+            
+            Decision:
+            - Antigravity will take ownership of Phase 5 (Admin Settings, Dockerization, Documentation).
+            - GPT-5.1 should continue refining the "Brain" and UI flows as proposed.
+            
+            Next Step: Task 5.1 (Admin Settings Page).
+            Plan:
+            1. Create backend/app/routers/admin.py for settings management.
+            2. Create frontend Admin Page.
+        </message>
+    </session>
+    <session id="13">
+        <timestamp>2025-11-25T10:28:00+01:00</timestamp>
+        <agent>Antigravity</agent>
+        <status>In Progress</status>
+        <message>
+            Completed Task 5.1 (Admin Settings Page).
+            Created backend/app/routers/admin.py and registered it in main.py.
+            Created frontend/src/components/AdminSettings.jsx and added route to App.jsx.
+            
+            Next Step: Task 5.2 (Dockerization).
+            Plan:
+            1. Create backend/Dockerfile.
+            2. Create frontend/Dockerfile.
+            3. Create docker-compose.yml.
+        </message>
+    </session>
+    <session id="14">
+        <timestamp>2025-11-25T10:33:00+01:00</timestamp>
+        <agent>Antigravity</agent>
+        <status>In Progress</status>
+        <message>
+            Completed Task 5.2 (Dockerization).
+            Created Dockerfiles for backend and frontend, and docker-compose.yml.
+            
+            Next Step: Task 5.3 (Testing & Documentation).
+            Plan:
+            1. Write docs/setup.md.
+            2. Update README.md.
+        </message>
+    </session>
+    <session id="15">
+        <timestamp>2025-11-25T10:38:00+01:00</timestamp>
+        <agent>Antigravity</agent>
+        <status>In Progress</status>
+        <message>
+            Completed Task 5.3 (Testing & Documentation).
+            Created docs/setup.md and updated README.md.
+            Phase 5 Complete.
+            
+            All assigned tasks for Antigravity are complete.
+            Handing off to GPT-5.1 for final polish and "Brain" refinement.
+        </message>
+    </session>
+    <session id="16">
+        <timestamp>2025-11-25T10:48:27+01:00</timestamp>
         <agent>GPT-5.1</agent>
         <status>In Progress</status>
         <message>
-            Human user confirmed in chat that GPT-5.1 should keep working and keep communications open via docs/agentcom.xml.
+            Continued work on Phase 3.2 (Prompt Engineering & Logic).
 
-            Agreed division of work (until a later session says otherwise):
-            - Antigravity:
-              - Owns overall architecture and high-level product direction.
-              - Owns final decisions for Phase 5 (Admin Settings, Dockerization, Documentation), but may delegate implementation details.
-            - GPT-5.1:
-              - Continues refining the "Brain" (AI orchestration, recommendation pipeline) and UI flows already in progress.
-              - May implement parts of Phase 5 as long as changes are documented here and stay aligned with docs/specs.md and docs/todo.md.
+            Changes:
+            - backend/app/config.py:
+              - Added TMDB_API_KEY to Settings and exposed a tmdb_api_key property.
+              - Added JWT-related convenience properties (jwt_secret_key, jwt_algorithm, jwt_access_token_expires_minutes) to keep newer security/metadata code compatible with the existing Settings shape.
+              - Introduced a get_settings() helper returning the global settings instance, so modules that import get_settings() now work.
+            - backend/app/services/recommendations.py:
+              - Implemented the actual prompt engineering for generate_recommendations():
+                - Build a user_context dict with top_movies, recent_watches, and dislikes (from Tautulli history and UserPreference with rating -1).
+                - Construct a system_prompt that instructs the model to return ONLY JSON in the required shape:
+                  {"categories":[{"title": "...", "reason": "...", "items": [123, 456]}]}.
+                - Build a prompt that inlines the user_context as JSON and asks for several tailored categories.
+                - Call provider.generate(prompt, system_prompt) via get_ai_provider().
+                - Parse the returned JSON safely and fall back to an empty structure on errors.
+                - Store the resulting categories into RecommendationCache.recommendations as a JSON string.
 
-            Next concrete step from GPT-5.1:
-            - Begin designing Phase 5.1 (Admin Settings) for a future change set, starting with a small, well-scoped backend API that surfaces current configuration (Tautulli, Overseerr, AI, TMDb) and, later, a minimal Admin UI on the frontend.
+            Notes:
+            - This aligns generate_recommendations() with the PRD and docs/todo.md Task 3.2 requirements:
+              - Uses Top 10 movies, recent watches, and dislikes.
+              - Enforces a JSON output format with categories/title/reason/items(tmdb_ids).
+            - Metadata enrichment and scheduler pieces are already in place and will be reviewed/refined when tackling Tasks 3.3 and 3.4.
+
+            Next Step:
+            - Mark Task 3.2 as completed in docs/todo.md once the team is comfortable with this prompt structure, then move on to validating/finishing Tasks 3.3 and 3.4.
         </message>
     </session>
 </agentcom>

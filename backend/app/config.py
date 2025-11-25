@@ -1,6 +1,9 @@
 import os
-from pydantic_settings import BaseSettings
 import uuid
+from functools import lru_cache
+
+from pydantic_settings import BaseSettings
+
 
 class Settings(BaseSettings):
     PROJECT_NAME: str = "Sagarr"
@@ -13,7 +16,7 @@ class Settings(BaseSettings):
     PLEX_CLIENT_ID: str = os.getenv("PLEX_CLIENT_ID", str(uuid.uuid4()))
     PLEX_DEVICE: str = "Sagarr Server"
     PLEX_VERSION: str = "0.1.0"
-    
+
     # URLs
     FRONTEND_URL: str = os.getenv("FRONTEND_URL", "http://localhost:5173")
 
@@ -26,12 +29,39 @@ class Settings(BaseSettings):
     OVERSEERR_API_KEY: str = os.getenv("OVERSEERR_API_KEY", "")
 
     # AI
-    AI_PROVIDER: str = os.getenv("AI_PROVIDER", "openai") # openai, generic
+    AI_PROVIDER: str = os.getenv("AI_PROVIDER", "openai")  # openai, generic
     AI_API_KEY: str = os.getenv("AI_API_KEY", "")
-    AI_BASE_URL: str = os.getenv("AI_BASE_URL", "") # For generic/ollama
+    AI_BASE_URL: str = os.getenv("AI_BASE_URL", "")  # For generic/ollama
     AI_MODEL: str = os.getenv("AI_MODEL", "gpt-3.5-turbo")
+
+    # TMDb
+    TMDB_API_KEY: str = os.getenv("TMDB_API_KEY", "")
 
     class Config:
         env_file = ".env"
 
+    # Properties used by newer code paths (security/metadata)
+    @property
+    def jwt_secret_key(self) -> str:
+        return self.SECRET_KEY
+
+    @property
+    def jwt_algorithm(self) -> str:
+        return self.ALGORITHM
+
+    @property
+    def jwt_access_token_expires_minutes(self) -> int:
+        return self.ACCESS_TOKEN_EXPIRE_MINUTES
+
+    @property
+    def tmdb_api_key(self) -> str:
+        return self.TMDB_API_KEY
+
+
 settings = Settings()
+
+
+@lru_cache
+def get_settings() -> Settings:
+    # For places that import get_settings() instead of using the global
+    return settings

@@ -44,11 +44,30 @@ async def generate_recommendations(db: Session, user_id: int) -> RecommendationC
         "dislikes": dislikes,
     }
 
-    provider = get_ai_provider()
-    raw = await provider.generate_categories(user_context=user_context)
+    system_prompt = (
+        "You are an AI that creates creative, descriptive movie recommendation categories "
+        "for a single user based on their Plex/Tautulli watch history and explicit dislikes. "
+        "Respond ONLY with valid JSON in the following shape: "
+        '{"categories":[{"title": "...", "reason": "...", "items": [123, 456]}]}. '
+        "Each item in 'items' must be an integer TMDb movie ID."
+    )
 
-    # Ensure a categories key exists
-    categories = raw.get("categories", [])
+    prompt = (
+        "Here is the user's viewing context as JSON.\n\n"
+        f"{json.dumps(user_context, ensure_ascii=False)}\n\n"
+        "Using this data, generate several recommendation categories tailored to the user. "
+        "Remember: respond only with JSON and no extra commentary."
+    )
+
+    provider = get_ai_provider()
+    raw_text = await provider.generate(prompt=prompt, system_prompt=system_prompt)
+
+    try:
+        parsed: dict[str, Any] = json.loads(raw_text or "{}")
+    except json.JSONDecodeError:
+        parsed = {}
+
+    categories = parsed.get("categories", []) or []
     payload = {"categories": categories}
 
     cache = RecommendationCache(

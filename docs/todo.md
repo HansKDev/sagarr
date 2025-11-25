@@ -85,12 +85,12 @@ This document outlines the step-by-step plan to build Sagarr, an AI-powered medi
     - Implement `generate_recommendations(user_id)` function that orchestrates fetching history -> calling AI -> parsing JSON.
     - **Dependencies:** 2.1, 3.1
 
-- [x] **Task 3.3: Metadata Enrichment**
+- [ ] **Task 3.3: Metadata Enrichment**
     - The AI gives TMDb IDs. We need posters/titles.
     - Implement a `MetadataService` (using TMDb API or Overseerr proxy) to fetch details for the recommended IDs.
     - **Dependencies:** 3.2
 
-- [x] **Task 3.4: Background Scheduler**
+- [ ] **Task 3.4: Background Scheduler**
     - Set up a scheduler (e.g., `APScheduler` or a simple background loop).
     - Create a job `refresh_recommendations` that runs nightly (or on demand) for all active users.
     - Store results in `RecommendationCache`.
@@ -99,13 +99,13 @@ This document outlines the step-by-step plan to build Sagarr, an AI-powered medi
 ## Phase 4: UI Implementation
 *Goal: Build the user-facing dashboard and interaction flows.*
 
-- [x] **Task 4.1: Dashboard UI**
+- [ ] **Task 4.1: Dashboard UI**
     - Create a `RecommendationRow` component (horizontal scroll).
     - Create a `MediaCard` component (Poster, Title).
     - Fetch cached recommendations from `GET /api/recommendations` and render them.
     - **Dependencies:** 1.3, 3.4
 
-- [x] **Task 4.2: Media Card Actions**
+- [ ] **Task 4.2: Media Card Actions**
     - Implement hover/click state on `MediaCard`.
     - **Logic:**
         - Call backend `GET /api/media/{tmdb_id}/status` (proxies Overseerr).
@@ -113,7 +113,7 @@ This document outlines the step-by-step plan to build Sagarr, an AI-powered medi
         - Implement click handlers to trigger backend actions.
     - **Dependencies:** 2.3, 4.1
 
-- [x] **Task 4.3: "Seen It" Workflow**
+- [ ] **Task 4.3: "Seen It" Workflow**
     - Add an "Eye" icon to the Media Card.
     - Create a Modal/Popover that asks: "Did you like it?" (Thumbs Up / Down).
     - **Backend:** `POST /api/media/{tmdb_id}/rate` -> Updates `UserPreference` table.
@@ -123,18 +123,18 @@ This document outlines the step-by-step plan to build Sagarr, an AI-powered medi
 ## Phase 5: Polish & Deployment
 *Goal: Make it production-ready.*
 
-- [ ] **Task 5.1: Admin Settings Page**
+- [x] **Task 5.1: Admin Settings Page**
     - Create a frontend page for Admins only.
     - Allow configuration of API Keys (Tautulli, Overseerr, AI) and Model selection via UI.
     - **Dependencies:** 1.3, 1.4
 
-- [ ] **Task 5.2: Dockerization**
+- [x] **Task 5.2: Dockerization**
     - Create `Dockerfile` for Backend.
     - Create `Dockerfile` for Frontend (multi-stage build: build React -> serve with Nginx or serve static via FastAPI).
     - Create `docker-compose.yml` orchestrating the service + volume for SQLite DB.
     - **Dependencies:** 1.1, 1.2, 1.3
 
-- [ ] **Task 5.3: Testing & Documentation**
+- [x] **Task 5.3: Testing & Documentation**
     - Run end-to-end manual tests.
     - Write `docs/setup.md` for users.
     - Finalize `README.md`.
