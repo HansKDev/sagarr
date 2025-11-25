@@ -26,7 +26,7 @@ class SettingsUpdate(BaseModel):
     AI_PROVIDER: str
     AI_API_KEY: str
     AI_MODEL: str
-     TMDB_API_KEY: str
+    TMDB_API_KEY: str
 
 
 def _ensure_admin(user: User) -> None:
