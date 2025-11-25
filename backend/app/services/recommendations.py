@@ -32,11 +32,38 @@ async def generate_recommendations(db: Session, user_id: int) -> RecommendationC
     tv_history = [item for item in tautulli_history if item.get("media_type") in ("show", "episode", "season")]
 
     # Prepare context slices
-    top_movies = movies_history[:10]
+    # Up to 20 movies for stronger signal.
+    top_movies = movies_history[:20]
     recent_movies = movies_history[:20]
-    
+
     top_tv = tv_history[:10]
     recent_tv = tv_history[:20]
+
+    # Derive a compact list of unique series titles (max 10) from TV history.
+    series_titles: list[str] = []
+    seen_series: set[str] = set()
+    for item in tv_history:
+        # Tautulli typically uses grandparent_title for series name on episodes.
+        name = item.get("grandparent_title") or item.get("title")
+        if not name:
+            continue
+        if name in seen_series:
+            continue
+        seen_series.add(name)
+        series_titles.append(name)
+        if len(series_titles) >= 10:
+            break
+
+    # Heuristic: collect up to 10 documentary items from history based on
+    # genres or library/section naming (best-effort signal for the AI).
+    documentaries: list[dict[str, Any]] = []
+    for item in tautulli_history:
+        genres = (item.get("genres") or "").lower()
+        section = (item.get("section_name") or item.get("library_name") or "").lower()
+        if "documentary" in genres or "documentary" in section:
+            documentaries.append(item)
+            if len(documentaries) >= 10:
+                break
 
     # Fetch dislikes from UserPreference
     dislikes_stmt = (
@@ -50,11 +77,15 @@ async def generate_recommendations(db: Session, user_id: int) -> RecommendationC
     user_context: dict[str, Any] = {
         "movies": {
             "top": top_movies,
-            "recent": recent_movies
+            "recent": recent_movies,
         },
         "tv": {
             "top": top_tv,
-            "recent": recent_tv
+            "recent": recent_tv,
+            "series_titles": series_titles,
+        },
+        "documentaries": {
+            "sample": documentaries,
         },
         "dislikes": dislikes,
     }
