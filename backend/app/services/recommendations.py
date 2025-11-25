@@ -130,6 +130,11 @@ async def generate_recommendations(db: Session, user_id: int) -> RecommendationC
     dislikes_rows = db.execute(dislikes_stmt).scalars().all()
     dislikes = [{"tmdb_id": row.tmdb_id, "media_type": row.media_type} for row in dislikes_rows]
 
+    # Any item that has been rated (up/down/seen) in Sagarr should no longer be
+    # re-suggested. We treat all UserPreference rows as "already seen here".
+    rated_stmt = select(UserPreference.tmdb_id).where(UserPreference.user_id == user_id)
+    rated_ids = {tmdb_id for tmdb_id in db.execute(rated_stmt).scalars().all() if tmdb_id is not None}
+
     user_context: dict[str, Any] = {
         "movies": {
             "top": top_movies,
@@ -146,6 +151,7 @@ async def generate_recommendations(db: Session, user_id: int) -> RecommendationC
         "likes": likes,
         "dislikes": dislikes,
         "watched_titles": sorted(watched_titles),
+        "rated_tmdb_ids": sorted(rated_ids),
     }
 
     system_prompt = (

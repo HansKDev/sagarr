@@ -25,6 +25,7 @@ async def _enrich_categories(
     raw_categories: list[dict],
     media_type: str,
     watched_titles: set[str],
+    blocked_tmdb_ids: set[int],
 ) -> list[RecommendationCategory]:
     """
     Helper to fetch metadata for a list of raw categories and return enriched objects.
@@ -60,6 +61,9 @@ async def _enrich_categories(
         items: list[MediaItem] = []
         for tmdb_id in cat.get("items", []):
             if not isinstance(tmdb_id, int):
+                continue
+            # Skip items the user has already rated/seen inside Sagarr.
+            if tmdb_id in blocked_tmdb_ids:
                 continue
             meta = metadata_map.get(tmdb_id, {})
             name = meta.get("title") or meta.get("name")
@@ -122,12 +126,18 @@ async def get_recommendations(
     raw_docs = data.get("documentaries", [])
 
     watched_titles = {t.strip().lower() for t in data.get("watched_titles", []) if isinstance(t, str)}
+    blocked_tmdb_ids: set[int] = set()
+    for raw_id in data.get("rated_tmdb_ids", []) or []:
+        try:
+            blocked_tmdb_ids.add(int(raw_id))
+        except (TypeError, ValueError):
+            continue
 
-    movies_enriched = await _enrich_categories(raw_movies, "movie", watched_titles)
-    tv_enriched = await _enrich_categories(raw_tv, "tv", watched_titles)
+    movies_enriched = await _enrich_categories(raw_movies, "movie", watched_titles, blocked_tmdb_ids)
+    tv_enriched = await _enrich_categories(raw_tv, "tv", watched_titles, blocked_tmdb_ids)
     # For now, we treat documentaries as movies. 
     # Future improvement: Support mixed types or ask AI to split doc-series vs doc-movies.
-    docs_enriched = await _enrich_categories(raw_docs, "movie", watched_titles)
+    docs_enriched = await _enrich_categories(raw_docs, "movie", watched_titles, blocked_tmdb_ids)
 
     return RecommendationsResponse(
         movies=movies_enriched, 
