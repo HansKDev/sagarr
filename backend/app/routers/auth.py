@@ -95,24 +95,27 @@ async def callback(request: CallbackRequest, db: Session = Depends(get_db)):
             data = resp.json()
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Failed to check PIN: {str(e)}")
-            
-    auth_token = data.get('authToken')
-    if not auth_token:
-        raise HTTPException(status_code=400, detail="User has not authorized the app yet.")
-        
-    # 2. Get User Details
-    user_headers = {
-        "X-Plex-Token": auth_token,
-        "X-Plex-Client-Identifier": config.settings.PLEX_CLIENT_ID,
-        "Accept": "application/json"
-    }
-    
-    try:
-        user_resp = await client.get("https://plex.tv/api/v2/user", headers=user_headers)
-        user_resp.raise_for_status()
-        user_data = user_resp.json()
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to fetch user info: {str(e)}")
+
+        auth_token = data.get('authToken')
+        if not auth_token:
+            # Plex hasn't authorized this PIN yet (user didn't finish login or PIN expired)
+            raise HTTPException(status_code=400, detail="User has not authorized the app yet.")
+
+        # 2. Get User Details using the same client
+        user_headers = {
+            "X-Plex-Token": auth_token,
+            "X-Plex-Client-Identifier": config.settings.PLEX_CLIENT_ID,
+            "Accept": "application/json"
+        }
+
+        try:
+            user_resp = await client.get("https://plex.tv/api/v2/user", headers=user_headers)
+            user_resp.raise_for_status()
+            user_data = user_resp.json()
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            raise HTTPException(status_code=500, detail=f"Failed to fetch user info: {str(e)}")
         
     # 3. Create/Update User in DB
     plex_id = user_data.get('id')

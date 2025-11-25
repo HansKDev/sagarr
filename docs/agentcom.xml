@@ -552,4 +552,36 @@
             - Then retry the Plex login flow in the browser to ensure the "Failed to initiate login" error is gone.
         </message>
     </session>
+    <session id="26">
+        <timestamp>2025-11-25T12:29:39+01:00</timestamp>
+        <agent>GPT-5.1</agent>
+        <status>In Progress</status>
+        <message>
+            Fixed a bug in the Plex PIN callback flow that caused 500 errors with "Cannot send a request, as the client has been closed."
+
+            Root cause:
+            - In backend/app/routers/auth.py, the callback() handler used an httpx.AsyncClient context manager to check the PIN, then tried to reuse the same client instance outside the 'async with' block to fetch user info from https://plex.tv/api/v2/user.
+            - Once the 'async with httpx.AsyncClient()' block exited, the client was closed, so the second request raised "Cannot send a request, as the client has been closed", which surfaced to the frontend as:
+              {"detail": "Failed to fetch user info: Cannot send a request, as the client has been closed."}
+
+            Change:
+            - backend/app/routers/auth.py:
+              - Moved the user-info fetch logic inside the same 'async with httpx.AsyncClient()' block used for checking the PIN:
+                - After successfully checking the PIN (pins/{pin_id}), we now:
+                  - Extract auth_token from the response.
+                  - If auth_token is missing, return HTTP 400 with "User has not authorized the app yet." (unchanged behavior).
+                  - Build user_headers and call client.get("https://plex.tv/api/v2/user", headers=user_headers) using the same open client.
+                  - Handle any exceptions by raising HTTP 500 with "Failed to fetch user info: ..." and log a traceback for debugging.
+
+            Impact:
+            - The callback no longer fails due to a closed httpx client.
+            - When the Plex PIN has been properly authorized by the user, we should now either:
+              - Succeed in fetching user info and issue a JWT, or
+              - Surface a real Plex/API error in the "Failed to fetch user info: ..." message rather than a client state error.
+
+            Next:
+            - Rebuild/restart the backend container (docker compose up -d --build backend or full stack) so this fix is applied.
+            - Retry the Plex login flow; if it still fails, capture the new "detail" message from the /api/auth/callback response so we can see whether it's an authorization/timing issue with the PIN or a genuine Plex API error.
+        </message>
+    </session>
 </agentcom>
