@@ -45,7 +45,11 @@
 *   **AI Integration:** LangChain or direct API calls (OpenAI, Anthropic, Ollama)
 *   **Containerization:** Docker & Docker Compose
 
-## 7. Implementation Plan
+## 7. Deployment Targets
+*   **Self-hosted Docker:** Single-node Docker Compose deployment on a homelab or VPS.
+*   **Saltbox-style Stack:** Optional integration into a Saltbox-like media stack, using a shared reverse proxy (e.g., Traefik) and consistent app/service naming.
+
+## 8. Implementation Plan
 
 ### Phase 1: Foundation
 *   Initialize Git repository and project structure (monorepo).
@@ -73,3 +77,10 @@
 *   Add admin settings page for AI configuration.
 *   Perform end-to-end testing.
 *   Write documentation and release.
+
+### Phase 6: Saltbox-style Integration (Optional)
+*   Add reverse-proxy integration (e.g., Traefik labels, shared proxy network, and hostname/path conventions) so Sagarr can be exposed consistently alongside other media services.
+*   Harden configuration and secrets handling for production:
+    *   Require a non-default `SECRET_KEY` and document required environment variables (`TAUTULLI_*`, `OVERSEERR_*`, `AI_*`, `TMDB_API_KEY`, `DATABASE_URL`).
+*   Implement an admin bootstrap flow (e.g., "first Plex user becomes admin" or an env/CLI seed) so `User.is_admin` can be set without manual DB edits.
+*   Improve logging and observability (structured logs, clearer errors for Tautulli/Overseerr/AI failures) to match expectations of an always-on, monitored service.

@@ -438,4 +438,38 @@
             - Leave deeper logging/observability improvements for a future iteration, unless they become a blocker during manual testing.
         </message>
     </session>
+    <session id="22">
+        <timestamp>2025-11-25T11:05:11+01:00</timestamp>
+        <agent>GPT-5.1</agent>
+        <status>In Progress</status>
+        <message>
+            Captured Saltbox-style integration requirements in the PRD and implementation plan.
+
+            PRD update:
+            - docs/specs.md:
+              - Added a new "Deployment Targets" section clarifying that Sagarr is designed for:
+                - Self-hosted Docker (single-node Docker Compose).
+                - Optional integration into a Saltbox-style stack (shared reverse proxy, consistent service naming).
+              - Introduced "Phase 6: Saltbox-style Integration (Optional)" under the Implementation Plan:
+                - Reverse proxy integration (Traefik labels, shared proxy network, hostname/path conventions).
+                - Hardened configuration/secrets (non-default SECRET_KEY, documented env vars for DB/Tautulli/Overseerr/AI/TMDb/frontend).
+                - Admin bootstrap flow (first user becomes admin or equivalent mechanism).
+                - Improved logging/observability (structured logs and clearer external-service error handling).
+
+            Implementation plan update:
+            - docs/todo.md:
+              - Added "Phase 6: Saltbox-style Integration (Optional)" with the following tasks:
+                - Task 6.1: Reverse Proxy Integration (Traefik labels, proxy network membership, Saltbox-style host/path docs).
+                - Task 6.2: Production Secrets & Config (enforce non-default SECRET_KEY, document required env vars, align .env examples).
+                - Task 6.3: Admin Bootstrap Flow (simple rule for setting User.is_admin and exposing it in the Admin Settings page).
+                - Task 6.4: Logging & Observability (replace print-style logs with structured logs and better error messages around Tautulli/Overseerr/AI).
+
+            Notes:
+            - All previously defined Phases (1–5) remain marked complete.
+            - Phase 6 is explicitly optional and focused on making Sagarr feel like a first-class citizen in a Saltbox-like environment.
+
+            Next:
+            - If we decide to pursue Phase 6 soon, we can start with Task 6.1 (Traefik labels and proxy networking) and Task 6.2 (SECRET_KEY enforcement and env docs), which are the minimum to behave well in a Saltbox deployment.
+        </message>
+    </session>
 </agentcom>

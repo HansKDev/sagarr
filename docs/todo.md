@@ -139,3 +139,29 @@ This document outlines the step-by-step plan to build Sagarr, an AI-powered medi
     - Write `docs/setup.md` for users.
     - Finalize `README.md`.
     - **Dependencies:** All previous tasks.
+
+## Phase 6: Saltbox-style Integration (Optional)
+*Goal: Make Sagarr easy to run as part of a Saltbox-like media stack (Traefik, shared proxy network, consistent env/secrets).*
+
+- [ ] **Task 6.1: Reverse Proxy Integration**
+    - Add Traefik (or similar) labels to `docker-compose.yml` (hostnames, entrypoints, middlewares).
+    - Ensure backend and frontend services join the appropriate proxy network(s).
+    - Document recommended hostnames/paths in a Saltbox-style install guide.
+    - **Dependencies:** 5.2
+
+- [ ] **Task 6.2: Production Secrets & Config**
+    - Enforce a non-default `SECRET_KEY` in production (fail fast if using the development default).
+    - Document required environment variables and their roles: `DATABASE_URL`, `TAUTULLI_URL`, `TAUTULLI_API_KEY`, `OVERSEERR_URL`, `OVERSEERR_API_KEY`, `AI_PROVIDER`, `AI_API_KEY`, `AI_MODEL`, `TMDB_API_KEY`, `FRONTEND_URL`.
+    - Align `.env` examples and Docker docs with Saltbox expectations.
+    - **Dependencies:** 5.2, 5.3
+
+- [ ] **Task 6.3: Admin Bootstrap Flow**
+    - Implement a simple bootstrap rule (e.g., first successfully authenticated Plex user becomes admin, or an env flag/CLI to promote a user).
+    - Expose current admin status in the Admin Settings page.
+    - **Dependencies:** 1.5, 5.1
+
+- [ ] **Task 6.4: Logging & Observability**
+    - Replace `print`-style logging in Tautulli/Overseerr/AI services with structured logs to stdout.
+    - Improve error surfaces for common failures (e.g., distinguish "service unreachable" vs "bad API key").
+    - Optionally add lightweight request/response logging around critical endpoints (`/api/recommendations`, `/api/media/*`).
+    - **Dependencies:** 2.1, 2.3, 3.1
