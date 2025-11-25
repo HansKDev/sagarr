@@ -14,8 +14,6 @@ permissions:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_BACKEND: ${{ github.repository_owner }}/sagarr-backend
-  IMAGE_FRONTEND: ${{ github.repository_owner }}/sagarr-frontend
 
 jobs:
   build-and-push:
@@ -35,6 +33,11 @@ jobs:
       - name: Set image tags
         id: vars
         run: |
+          OWNER="${GITHUB_REPOSITORY%%/*}"
+          OWNER_LC=$(echo "${OWNER}" | tr '[:upper:]' '[:lower:]')
+          IMAGE_BACKEND="${OWNER_LC}/sagarr-backend"
+          IMAGE_FRONTEND="${OWNER_LC}/sagarr-frontend"
+
           # Default tag is the short SHA
           SHA_TAG=${GITHUB_SHA::7}
           TAGS_BACKEND="${REGISTRY}/${IMAGE_BACKEND}:${SHA_TAG}"
@@ -71,4 +74,3 @@ jobs:
           file: ./frontend/Dockerfile
           push: true
           tags: ${{ steps.vars.outputs.frontend_tags }}
-
