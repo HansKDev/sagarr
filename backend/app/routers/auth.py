@@ -189,6 +189,7 @@ async def callback(request: CallbackRequest, db: Session = Depends(get_db)):
             "id": user.id,
             "username": user.username,
             "email": user.email,
-            "thumb": user.thumb
+            "thumb": user.thumb,
+            "is_admin": bool(user.is_admin),
         }
     }

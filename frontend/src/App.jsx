@@ -8,10 +8,34 @@ import AdminSettings from './components/AdminSettings'
 import Logo from './components/Logo'
 import { initAuthFromStorage } from './apiClient.js'
 
+function getStoredUser() {
+  const raw = localStorage.getItem('user')
+  if (!raw) return null
+  try {
+    return JSON.parse(raw)
+  } catch {
+    return null
+  }
+}
+
 function ProtectedRoute({ children }) {
   const token = localStorage.getItem('token')
   if (!token) {
     return <Navigate to="/login" replace />
+  }
+  return children
+}
+
+function AdminRoute({ children }) {
+  const token = localStorage.getItem('token')
+  const user = getStoredUser()
+  const isAdmin = !!user?.is_admin
+
+  if (!token) {
+    return <Navigate to="/login" replace />
+  }
+  if (!isAdmin) {
+    return <Navigate to="/" replace />
   }
   return children
 }
@@ -40,7 +64,9 @@ function App() {
             {localStorage.getItem('token') && (
               <>
                 <Link to="/history" className="nav-link">History</Link>
-                <Link to="/admin" className="nav-link">Admin</Link>
+                {getStoredUser()?.is_admin && (
+                  <Link to="/admin" className="nav-link">Admin</Link>
+                )}
                 <button onClick={handleLogout} className="btn-logout">
                   Logout
                 </button>
@@ -61,9 +87,9 @@ function App() {
             </ProtectedRoute>
           } />
           <Route path="/admin" element={
-            <ProtectedRoute>
+            <AdminRoute>
               <AdminSettings />
-            </ProtectedRoute>
+            </AdminRoute>
           } />
           <Route path="/login" element={<Login />} />
           <Route path="/login/callback" element={<LoginCallback />} />
