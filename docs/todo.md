@@ -126,6 +126,7 @@ This document outlines the step-by-step plan to build Sagarr, an AI-powered medi
 - [x] **Task 5.1: Admin Settings Page**
     - Create a frontend page for Admins only.
     - Allow configuration of API Keys (Tautulli, Overseerr, AI) and Model selection via UI.
+    - Add a "Test" button for each configurable integration (Tautulli, Overseerr, AI, TMDb) that calls a simple backend health endpoint and surfaces success/failure inline.
     - **Dependencies:** 1.3, 1.4
 
 - [x] **Task 5.2: Dockerization**
