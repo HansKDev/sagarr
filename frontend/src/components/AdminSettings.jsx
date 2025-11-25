@@ -52,16 +52,17 @@ function AdminSettings() {
         setSettings({ ...settings, [e.target.name]: e.target.value })
     }
 
-    const handleSubmit = async (e) => {
-        e.preventDefault()
+    const saveSettings = async (scopeLabel) => {
         setSaving(true)
         setMessage('')
+
         try {
             const token = localStorage.getItem('token')
             await axios.post('/api/admin/settings', settings, {
                 headers: { Authorization: `Bearer ${token}` }
             })
-            setMessage('Settings updated successfully!')
+            const label = scopeLabel ? `${scopeLabel} settings` : 'Settings'
+            setMessage(`${label} updated successfully!`)
             // Refresh to show masked keys again if needed, or just keep as is
             fetchSettings()
         } catch (err) {
@@ -70,6 +71,11 @@ function AdminSettings() {
         } finally {
             setSaving(false)
         }
+    }
+
+    const handleSubmit = async (e) => {
+        e.preventDefault()
+        await saveSettings()
     }
 
     const runTest = async (service) => {
@@ -135,6 +141,14 @@ function AdminSettings() {
                     <div style={{ marginTop: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                         <button
                             type="button"
+                            onClick={() => saveSettings('Tautulli')}
+                            disabled={saving}
+                            style={{ padding: '0.4rem 0.8rem', fontSize: '0.9rem', borderRadius: '4px', border: 'none', background: '#e5a00d', color: 'black', cursor: 'pointer' }}
+                        >
+                            {saving ? 'Saving...' : 'Save Tautulli'}
+                        </button>
+                        <button
+                            type="button"
                             onClick={() => runTest('tautulli')}
                             disabled={testing.tautulli}
                             style={{ padding: '0.4rem 0.8rem', fontSize: '0.9rem', borderRadius: '4px', border: '1px solid #888', background: '#111', color: 'white', cursor: 'pointer' }}
@@ -170,6 +184,14 @@ function AdminSettings() {
                         />
                     </div>
                     <div style={{ marginTop: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <button
+                            type="button"
+                            onClick={() => saveSettings('Overseerr')}
+                            disabled={saving}
+                            style={{ padding: '0.4rem 0.8rem', fontSize: '0.9rem', borderRadius: '4px', border: 'none', background: '#e5a00d', color: 'black', cursor: 'pointer' }}
+                        >
+                            {saving ? 'Saving...' : 'Save Overseerr'}
+                        </button>
                         <button
                             type="button"
                             onClick={() => runTest('overseerr')}
@@ -219,6 +241,14 @@ function AdminSettings() {
                         />
                     </div>
                     <div style={{ marginTop: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <button
+                            type="button"
+                            onClick={() => saveSettings('AI')}
+                            disabled={saving}
+                            style={{ padding: '0.4rem 0.8rem', fontSize: '0.9rem', borderRadius: '4px', border: 'none', background: '#e5a00d', color: 'black', cursor: 'pointer' }}
+                        >
+                            {saving ? 'Saving...' : 'Save AI'}
+                        </button>
                         <button
                             type="button"
                             onClick={() => runTest('ai')}

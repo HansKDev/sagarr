@@ -132,6 +132,7 @@ This document outlines the step-by-step plan to build Sagarr, an AI-powered medi
         - `GET /api/admin/test/ai` -> runs a tiny prompt against the configured AI provider.
         - `GET /api/admin/test/tmdb` -> verifies TMDb API key by fetching a known movie.
     - Wire a "Test" button under each configurable integration (Tautulli, Overseerr, AI, TMDb) in the Admin UI that calls the corresponding backend test endpoint and surfaces success/failure inline.
+    - Add per-section "Save" buttons for Tautulli, Overseerr, and AI so each integration can be saved independently alongside its test control.
     - **Dependencies:** 1.3, 1.4
 
 - [x] **Task 5.2: Dockerization**
@@ -161,9 +162,9 @@ This document outlines the step-by-step plan to build Sagarr, an AI-powered medi
     - Align `.env` examples and Docker docs with Saltbox expectations.
     - **Dependencies:** 5.2, 5.3
 
-- [ ] **Task 6.3: Admin Bootstrap Flow**
-    - Implement a simple bootstrap rule (e.g., first successfully authenticated Plex user becomes admin, or an env flag/CLI to promote a user).
-    - Expose current admin status in the Admin Settings page.
+- [x] **Task 6.3: Admin Bootstrap Flow**
+    - Implement a simple bootstrap rule: the first successfully authenticated Plex user becomes admin (`User.is_admin = True`) during the `/api/auth/callback` flow if no admin exists yet.
+    - Expose current admin status in the Admin Settings page (future UI enhancement).
     - **Dependencies:** 1.5, 5.1
 
 - [ ] **Task 6.4: Logging & Observability**

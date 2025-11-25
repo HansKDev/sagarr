@@ -143,7 +143,7 @@ async def callback(request: CallbackRequest, db: Session = Depends(get_db)):
             email=email,
             thumb=thumb,
             auth_token=auth_token,
-            tautulli_user_id=tautulli_user_id
+            tautulli_user_id=tautulli_user_id,
         )
         db.add(user)
     else:
@@ -152,7 +152,12 @@ async def callback(request: CallbackRequest, db: Session = Depends(get_db)):
         user.thumb = thumb
         user.auth_token = auth_token
         user.tautulli_user_id = tautulli_user_id
-    
+
+    # Bootstrap admin: if there is no admin user yet, make this user admin.
+    has_admin = db.query(models.User).filter(models.User.is_admin.is_(True)).first()
+    if not has_admin:
+        user.is_admin = True
+
     db.commit()
     db.refresh(user)
     

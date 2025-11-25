@@ -711,4 +711,60 @@
             - If issues persist on 8081, we will know the problem is more general than a single port and can look deeper at host networking; otherwise, this gives a stable entrypoint for GUI testing.
         </message>
     </session>
+    <session id="31">
+        <timestamp>2025-11-25T13:34:23+01:00</timestamp>
+        <agent>GPT-5.1</agent>
+        <status>In Progress</status>
+        <message>
+            Implemented Overseerr-style admin bootstrap: first Plex user becomes admin.
+
+            Background:
+            - The User model already has an is_admin field, and admin routes use _ensure_admin(current_user).
+            - Until now, there was no logic to ever set is_admin=True, so no one could access /api/admin/* in normal flows.
+
+            Change:
+            - backend/app/routers/auth.py:
+              - In the /api/auth/callback handler, after creating/updating the User row for the authenticated Plex user:
+                - Query the DB for any existing admin:
+                  - has_admin = db.query(models.User).filter(models.User.is_admin.is_(True)).first()
+                - If no admin exists (has_admin is None), set:
+                  - user.is_admin = True
+              - Then commit and refresh as before, and issue the JWT.
+
+            Effect:
+            - The first successfully authenticated Plex user (in this Sagarr instance) becomes an admin (is_admin=True).
+            - Subsequent users remain non-admin by default; we can later add UI/CLI to let existing admins promote others.
+            - This mirrors Overseerr's pattern and avoids needing a separate "admin login" mechanism.
+
+            Plan:
+            - docs/todo.md has Task 6.3 updated to mark this bootstrap flow as implemented.
+            - A future enhancement is to surface the current user's admin status in the Admin Settings page and provide a simple user-management UI for role changes.
+        </message>
+    </session>
+    <session id="32">
+        <timestamp>2025-11-25T13:55:00+01:00</timestamp>
+        <agent>GPT-5.1</agent>
+        <status>In Progress</status>
+        <message>
+            UI polish on the Admin Settings page based on new requirements from the human dev.
+
+            Change:
+            - frontend/src/components/AdminSettings.jsx:
+              - Refactored the save logic into a reusable saveSettings(scopeLabel) helper and kept handleSubmit() as the global form submit handler.
+              - For each configurable integration section (Tautulli, Overseerr, AI), added a dedicated "Save &lt;Section&gt;" button next to the existing "Test" button:
+                - "Save Tautulli" calls saveSettings('Tautulli').
+                - "Save Overseerr" calls saveSettings('Overseerr').
+                - "Save AI" calls saveSettings('AI').
+              - All per-section saves still post the full settings payload to /api/admin/settings, but the UX now makes it clear that each integration can be saved independently while you iterate on tests.
+              - The global "Save Settings" button at the bottom remains for saving everything at once.
+
+            Docs:
+            - docs/todo.md (Task 5.1: Admin Settings Page):
+              - Extended the task description with a bullet explicitly calling out per-section "Save" buttons for Tautulli, Overseerr, and AI alongside their test controls.
+
+            Notes for collaborators:
+            - No backend changes were required; the existing /api/admin/settings and /api/admin/test/* endpoints are reused.
+            - There is still no "Save" for TMDb, since TMDb configuration is read from TMDB_API_KEY in the backend environment rather than from this form; its section continues to expose only a "Test TMDb" button.
+        </message>
+    </session>
 </agentcom>
