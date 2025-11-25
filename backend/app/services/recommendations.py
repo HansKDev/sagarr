@@ -12,6 +12,41 @@ from .ai import get_ai_provider
 from .tautulli import get_user_history
 
 
+ADULT_KEYWORDS = [
+    "porn",
+    "porno",
+    "xxx",
+    "adult",
+    "erotic",
+    "erotica",
+    "hentai",
+]
+
+
+def _looks_adult(item: dict[str, Any]) -> bool:
+    """
+    Best-effort heuristic to filter out explicit adult content from the
+    AI context using Tautulli fields (library name, genres, title, etc.).
+    """
+    def to_text(value: Any) -> str:
+        if isinstance(value, list):
+            return " ".join(str(v) for v in value)
+        return str(value or "")
+
+    combined = " ".join(
+        [
+            to_text(item.get("genres")),
+            to_text(item.get("section_name")),
+            to_text(item.get("library_name")),
+            to_text(item.get("title")),
+            to_text(item.get("grandparent_title")),
+            to_text(item.get("tagline")),
+        ]
+    ).lower()
+
+    return any(keyword in combined for keyword in ADULT_KEYWORDS)
+
+
 async def generate_recommendations(db: Session, user_id: int) -> RecommendationCache:
     """
     Orchestrate fetching history, calling AI, and storing parsed JSON.
@@ -26,6 +61,9 @@ async def generate_recommendations(db: Session, user_id: int) -> RecommendationC
 
     # Fetch history (limit increased to get enough of both types)
     tautulli_history = await get_user_history(int(user.tautulli_user_id), limit=300)
+
+    # Strip out explicit adult content before it ever reaches the AI.
+    tautulli_history = [item for item in tautulli_history if not _looks_adult(item)]
 
     # Split history by media type
     movies_history = [item for item in tautulli_history if item.get("media_type") == "movie"]
@@ -102,6 +140,7 @@ async def generate_recommendations(db: Session, user_id: int) -> RecommendationC
     system_prompt = (
         "You are an AI that creates creative, descriptive recommendation categories "
         "for a single user based on their Plex/Tautulli watch history and explicit likes/dislikes. "
+        "Never recommend explicit pornography or adult-only content. "
         "You must generate recommendations for Movies, TV Series, AND Documentaries. "
         "Respond ONLY with valid JSON in the following shape: "
         '{"movies": [{"title": "...", "reason": "...", "items": [123]}], '

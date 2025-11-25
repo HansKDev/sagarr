@@ -32,6 +32,9 @@ async def fetch_tmdb_details(tmdb_ids: list[int], media_type: str = "movie") -> 
                 resp = await client.get(endpoint, params={"api_key": api_key, "language": "en-US"})
                 if resp.status_code == 200:
                     data = resp.json()
+                    # Skip explicit adult content.
+                    if data.get("adult") is True:
+                        continue
                     # Normalize title/name
                     if "name" in data and "title" not in data:
                         data["title"] = data["name"]
