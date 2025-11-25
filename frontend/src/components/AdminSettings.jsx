@@ -15,6 +15,18 @@ function AdminSettings() {
     const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(false)
     const [message, setMessage] = useState('')
+    const [testMessages, setTestMessages] = useState({
+        tautulli: '',
+        overseerr: '',
+        ai: '',
+        tmdb: ''
+    })
+    const [testing, setTesting] = useState({
+        tautulli: false,
+        overseerr: false,
+        ai: false,
+        tmdb: false
+    })
     const navigate = useNavigate()
 
     useEffect(() => {
@@ -60,6 +72,29 @@ function AdminSettings() {
         }
     }
 
+    const runTest = async (service) => {
+        setTesting((prev) => ({ ...prev, [service]: true }))
+        setTestMessages((prev) => ({ ...prev, [service]: '' }))
+        try {
+            const token = localStorage.getItem('token')
+            const res = await axios.get(`/api/admin/test/${service}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            })
+            setTestMessages((prev) => ({ ...prev, [service]: res.data.message || 'OK' }))
+        } catch (err) {
+            console.error(err)
+            let msg = 'Test failed.'
+            if (err.response?.data?.detail) {
+                msg = typeof err.response.data.detail === 'string'
+                    ? err.response.data.detail
+                    : JSON.stringify(err.response.data.detail)
+            }
+            setTestMessages((prev) => ({ ...prev, [service]: msg }))
+        } finally {
+            setTesting((prev) => ({ ...prev, [service]: false }))
+        }
+    }
+
     if (loading) return <div style={{ padding: '2rem' }}>Loading settings...</div>
 
     return (
@@ -97,6 +132,19 @@ function AdminSettings() {
                             style={{ padding: '0.5rem', background: '#222', border: '1px solid #444', color: 'white' }}
                         />
                     </div>
+                    <div style={{ marginTop: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <button
+                            type="button"
+                            onClick={() => runTest('tautulli')}
+                            disabled={testing.tautulli}
+                            style={{ padding: '0.4rem 0.8rem', fontSize: '0.9rem', borderRadius: '4px', border: '1px solid #888', background: '#111', color: 'white', cursor: 'pointer' }}
+                        >
+                            {testing.tautulli ? 'Testing...' : 'Test Tautulli'}
+                        </button>
+                        {testMessages.tautulli && (
+                            <span style={{ fontSize: '0.85rem', color: '#e5e5e5' }}>{testMessages.tautulli}</span>
+                        )}
+                    </div>
                 </section>
 
                 <section>
@@ -120,6 +168,19 @@ function AdminSettings() {
                             placeholder="Your API Key"
                             style={{ padding: '0.5rem', background: '#222', border: '1px solid #444', color: 'white' }}
                         />
+                    </div>
+                    <div style={{ marginTop: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <button
+                            type="button"
+                            onClick={() => runTest('overseerr')}
+                            disabled={testing.overseerr}
+                            style={{ padding: '0.4rem 0.8rem', fontSize: '0.9rem', borderRadius: '4px', border: '1px solid #888', background: '#111', color: 'white', cursor: 'pointer' }}
+                        >
+                            {testing.overseerr ? 'Testing...' : 'Test Overseerr'}
+                        </button>
+                        {testMessages.overseerr && (
+                            <span style={{ fontSize: '0.85rem', color: '#e5e5e5' }}>{testMessages.overseerr}</span>
+                        )}
                     </div>
                 </section>
 
@@ -156,6 +217,40 @@ function AdminSettings() {
                             placeholder="gpt-4o or llama3"
                             style={{ padding: '0.5rem', background: '#222', border: '1px solid #444', color: 'white' }}
                         />
+                    </div>
+                    <div style={{ marginTop: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <button
+                            type="button"
+                            onClick={() => runTest('ai')}
+                            disabled={testing.ai}
+                            style={{ padding: '0.4rem 0.8rem', fontSize: '0.9rem', borderRadius: '4px', border: '1px solid #888', background: '#111', color: 'white', cursor: 'pointer' }}
+                        >
+                            {testing.ai ? 'Testing...' : 'Test AI'}
+                        </button>
+                        {testMessages.ai && (
+                            <span style={{ fontSize: '0.85rem', color: '#e5e5e5' }}>{testMessages.ai}</span>
+                        )}
+                    </div>
+                </section>
+
+                <section>
+                    <h3>TMDb Configuration</h3>
+                    <p style={{ fontSize: '0.85rem', color: '#cbd5f5' }}>
+                        TMDb is used for fetching posters and titles for recommended items. The API key is currently read from
+                        the backend environment (TMDB_API_KEY).
+                    </p>
+                    <div style={{ marginTop: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <button
+                            type="button"
+                            onClick={() => runTest('tmdb')}
+                            disabled={testing.tmdb}
+                            style={{ padding: '0.4rem 0.8rem', fontSize: '0.9rem', borderRadius: '4px', border: '1px solid #888', background: '#111', color: 'white', cursor: 'pointer' }}
+                        >
+                            {testing.tmdb ? 'Testing...' : 'Test TMDb'}
+                        </button>
+                        {testMessages.tmdb && (
+                            <span style={{ fontSize: '0.85rem', color: '#e5e5e5' }}>{testMessages.tmdb}</span>
+                        )}
                     </div>
                 </section>
 
