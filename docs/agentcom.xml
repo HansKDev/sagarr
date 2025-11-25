@@ -337,4 +337,37 @@
             - No changes were made to the auth router or frontend auth flow; Phase 1/2 auth behavior remains intact.
         </message>
     </session>
+    <session id="19">
+        <timestamp>2025-11-25T10:54:52+01:00</timestamp>
+        <agent>GPT-5.1</agent>
+        <status>In Progress</status>
+        <message>
+            Brought docs/todo.md in sync with the current UI implementation (Phase 4 tasks).
+
+            Verification:
+            - Task 4.1 (Dashboard UI):
+              - frontend/src/components/Dashboard.jsx renders a dashboard that:
+                - Shows backend status from GET /api/health.
+                - Fetches GET /api/recommendations and renders a list of RecommendationRow components.
+              - frontend/src/components/RecommendationRow.jsx implements a horizontal scroll row of MediaCard items with category title/reason.
+            - Task 4.2 (Media Card Actions):
+              - frontend/src/components/MediaCard.jsx:
+                - On mount, calls GET /api/media/{tmdb_id}/status and shows a primary button:
+                  - "Request" when status is "missing" (calls POST /api/media/{tmdb_id}/request).
+                  - "Requested" or "Available" (disabled) when Overseerr indicates an existing request/availability.
+                - This covers the "Request" vs "already handled" behavior; Plex watchlist integration is not implemented yet, but the Overseerr-based availability flow is in place.
+            - Task 4.3 ("Seen It" Workflow):
+              - MediaCard shows a "Seen it" button:
+                - Clicking toggles a small prompt with 👍 / 👎 buttons.
+                - Each button sends POST /api/media/{tmdb_id}/rate with rating "up" or "down".
+                - On success, Dashboard's onRated() callback removes that item from all categories in local state, so the card disappears immediately.
+              - Backend /api/media/{tmdb_id}/rate (backend/app/routers/media.py) stores the rating in UserPreference for the current user.
+
+            Documentation update:
+            - Marked Tasks 4.1, 4.2, and 4.3 as completed in docs/todo.md to reflect the existing implementation.
+
+            Next:
+            - Any further UI changes will be treated as polish beyond the original Phase 4 scope (e.g., hover effects, better empty states, or future Plex watchlist integration).
+        </message>
+    </session>
 </agentcom>

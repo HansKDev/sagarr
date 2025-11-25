@@ -99,13 +99,13 @@ This document outlines the step-by-step plan to build Sagarr, an AI-powered medi
 ## Phase 4: UI Implementation
 *Goal: Build the user-facing dashboard and interaction flows.*
 
-- [ ] **Task 4.1: Dashboard UI**
+- [x] **Task 4.1: Dashboard UI**
     - Create a `RecommendationRow` component (horizontal scroll).
     - Create a `MediaCard` component (Poster, Title).
     - Fetch cached recommendations from `GET /api/recommendations` and render them.
     - **Dependencies:** 1.3, 3.4
 
-- [ ] **Task 4.2: Media Card Actions**
+- [x] **Task 4.2: Media Card Actions**
     - Implement hover/click state on `MediaCard`.
     - **Logic:**
         - Call backend `GET /api/media/{tmdb_id}/status` (proxies Overseerr).
@@ -113,7 +113,7 @@ This document outlines the step-by-step plan to build Sagarr, an AI-powered medi
         - Implement click handlers to trigger backend actions.
     - **Dependencies:** 2.3, 4.1
 
-- [ ] **Task 4.3: "Seen It" Workflow**
+- [x] **Task 4.3: "Seen It" Workflow**
     - Add an "Eye" icon to the Media Card.
     - Create a Modal/Popover that asks: "Did you like it?" (Thumbs Up / Down).
     - **Backend:** `POST /api/media/{tmdb_id}/rate` -> Updates `UserPreference` table.
