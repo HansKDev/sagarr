@@ -14,7 +14,9 @@ class OverseerrService:
         Check if media is available or requested.
         Returns: { "status": "AVAILABLE" | "PARTIALLY_AVAILABLE" | "PROCESSING" | "PENDING" | "UNKNOWN", "plexUrl": ... }
         """
-        base_url = settings.OVERSEERR_URL.rstrip("/")
+        base_url = settings.OVERSEERR_URL.strip().rstrip("/")
+        if base_url and not base_url.startswith(("http://", "https://")):
+            base_url = f"http://{base_url}"
         api_key = settings.OVERSEERR_API_KEY
 
         if not base_url or not api_key:
@@ -61,7 +63,9 @@ class OverseerrService:
         """
         Request media via Overseerr.
         """
-        base_url = settings.OVERSEERR_URL.rstrip("/")
+        base_url = settings.OVERSEERR_URL.strip().rstrip("/")
+        if base_url and not base_url.startswith(("http://", "https://")):
+            base_url = f"http://{base_url}"
         api_key = settings.OVERSEERR_API_KEY
 
         if not base_url or not api_key:

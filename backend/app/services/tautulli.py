@@ -11,7 +11,10 @@ class TautulliService:
         pass
 
     def _build_url(self, params: dict) -> str:
-        base_url = settings.TAUTULLI_URL.rstrip("/")
+        base_url = settings.TAUTULLI_URL.strip().rstrip("/")
+        # Allow shorthand like "tautulli:8181" by assuming http://
+        if base_url and not base_url.startswith(("http://", "https://")):
+            base_url = f"http://{base_url}"
         api_key = settings.TAUTULLI_API_KEY
         query = "&".join([f"{k}={v}" for k, v in params.items()])
         return f"{base_url}/api/v2?apikey={api_key}&{query}"
