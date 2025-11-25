@@ -26,6 +26,42 @@ body {
   min-height: 100vh;
 }
 
+/* --- 6. DASHBOARD & RECOMMENDATIONS --- */
+
+.dashboard {
+  padding-bottom: 3rem;
+}
+
+.recommendation-row {
+  margin-bottom: 2rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid rgba(148, 163, 184, 0.35); /* slate-400 at low alpha */
+}
+
+/* Rows that explain themselves (\"Since you liked …\") get tighter spacing. */
+.recommendation-row.recommendation-row--tight {
+  margin-bottom: 1rem;
+  padding-top: 0.5rem;
+  border-top: none;
+}
+
+.recommendation-row-header h3 {
+  margin: 0 0 0.25rem 0;
+}
+
+.recommendation-row-reason {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.9rem;
+  color: var(--text-dim);
+}
+
+.recommendation-row-scroll {
+  display: flex;
+  gap: 0.75rem;
+  overflow-x: auto;
+  padding-bottom: 0.25rem;
+}
+
 /* --- 3. LOGO COMPONENT STYLES --- */
 
 /* Wrapper for the full logo (Icon + Text) */

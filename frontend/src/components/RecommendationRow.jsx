@@ -5,8 +5,12 @@ function RecommendationRow({ category, onRated }) {
     return null
   }
 
+  const hasSinceYouLikedReason =
+    typeof category.reason === 'string' &&
+    category.reason.toLowerCase().startsWith('since you liked')
+
   return (
-    <section className="recommendation-row">
+    <section className={`recommendation-row${hasSinceYouLikedReason ? ' recommendation-row--tight' : ''}`}>
       <header className="recommendation-row-header">
         <h3>{category.title}</h3>
         {category.reason && <p className="recommendation-row-reason">{category.reason}</p>}
@@ -21,4 +25,3 @@ function RecommendationRow({ category, onRated }) {
 }
 
 export default RecommendationRow
-
