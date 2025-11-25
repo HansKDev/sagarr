@@ -183,6 +183,12 @@ This document outlines the step-by-step plan to build Sagarr, an AI-powered medi
     - Finalize `README.md`.
     - **Dependencies:** All previous tasks.
 
+- [x] **Task 5.4: Security & Content Safety Refinements**
+    - **Adult Content:** Implement heuristics to filter explicit content from Tautulli history and TMDb metadata.
+    - **Frontend Security:** Create `AdminRoute` to protect admin pages from non-admin users.
+    - **Deduplication:** Ensure previously watched or rated items are not re-recommended.
+    - **Dependencies:** 3.2, 5.1
+
 ## Phase 6: Saltbox Integration (Ready for Deployment)
 *Goal: Make Sagarr deployable on a standard Saltbox stack with Traefik, proper permissions, and standard paths.*
 

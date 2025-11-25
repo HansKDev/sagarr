@@ -39,6 +39,7 @@ This project follows a simple, semantic-style versioning scheme: `MAJOR.MINOR.PA
 - TMDb-based metadata enrichment for titles, posters, and overviews.
 - Media actions:
   - Overseerr-backed status and request endpoints.
+  - **Smart Series Requesting**: Automatically requests Seasons 1-3 for TV shows.
   - Rating endpoint to store likes/dislikes and “seen it” signals.
 - Frontend SPA:
   - Login, Dashboard, History, and Admin pages with protected routing.
