@@ -59,7 +59,7 @@ This guide will help you set up and run Sagarr, the AI-powered media recommendat
 
 -   **Backend Logs**: `docker logs sagarr-backend`
 -   **Frontend Logs**: `docker logs sagarr-frontend`
--   **Database**: The SQLite database is stored in the `sagarr-data` volume.
+-   **Database**: The SQLite database is stored on the host at `/opt/sagarr/data/sagarr.db` (bound into the container at `/app/data`).
 
 ## Development
 

@@ -45,6 +45,7 @@ This guide explains how to deploy Sagarr on a [Saltbox](https://docs.saltbox.dev
     *   Check logs: `docker compose logs -f`
     *   Access the web UI: `https://sagarr.yourdomain.com`
     *   **First Login**: The first user to log in via Plex will automatically become the **Admin**.
+    *   **Database Location**: The SQLite database is stored at `/opt/sagarr/data/sagarr.db` on the host and mounted into the backend container at `/app/data`.
 
 ## Troubleshooting
 
