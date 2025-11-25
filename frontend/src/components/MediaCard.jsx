@@ -45,7 +45,8 @@ function MediaCard({ item, onRated }) {
   const handleRate = async (rating) => {
     try {
       setSubmittingRating(true)
-      await axios.post(`/api/media/${item.tmdb_id}/rate`, { rating })
+      const mediaType = item.media_type || 'movie'
+      await axios.post(`/api/media/${item.tmdb_id}/rate`, { rating, media_type: mediaType })
       if (onRated) {
         onRated(item.tmdb_id)
       }
