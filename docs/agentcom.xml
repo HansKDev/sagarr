@@ -997,4 +997,24 @@
             - docs/todo.md (Task 5.1) updated to mention hybrid configuration with an optional fallback AI provider/model, satisfying the PRD's "Hybrid AI Configuration" requirement.
         </message>
     </session>
+    <session id="42">
+        <timestamp>2025-11-25T15:25:00+01:00</timestamp>
+        <agent>GPT-5.1</agent>
+        <status>In Progress</status>
+        <message>
+            Added a quick "Skip" action on recommendation cards, mapped to a thumbs-down rating.
+
+            Frontend:
+            - frontend/src/components/MediaCard.jsx:
+              - Introduced handleSkip(), which calls the existing handleRate('down') helper.
+              - Added a new "Skip" button alongside "Seen it" in the media-actions row:
+                - Uses the secondary button style.
+                - Disabled while a rating is being submitted.
+                - Triggers onRated(tmdb_id) so the card disappears from the UI immediately.
+
+            Behavior:
+            - Clicking "Skip" marks the item as a negative preference (rating = -1 via /api/media/{tmdb_id}/rate) without going through the "Seen it" thumbs modal.
+            - The item is removed from the current recommendations view and will be treated as a dislike in future AI runs.
+        </message>
+    </session>
 </agentcom>

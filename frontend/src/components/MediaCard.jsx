@@ -54,14 +54,20 @@ function MediaCard({ item, onRated }) {
     }
   }
 
+  const handleSkip = () => {
+    // "Skip" is treated as a thumbs down so we stop
+    // surfacing this item in future recommendations.
+    handleRate('down')
+  }
+
   const renderPrimaryAction = () => {
     if (loadingStatus) {
-      return <button className="media-button" disabled>Loading...</button>
+      return <button className="btn btn-secondary" disabled>Loading...</button>
     }
 
     if (status === 'missing') {
       return (
-        <button className="media-button" type="button" onClick={handleRequest}>
+        <button className="btn btn-primary" type="button" onClick={handleRequest}>
           Request
         </button>
       )
@@ -69,7 +75,7 @@ function MediaCard({ item, onRated }) {
 
     if (status === 'requested') {
       return (
-        <button className="media-button media-button-muted" type="button" disabled>
+        <button className="btn btn-secondary" type="button" disabled>
           Requested
         </button>
       )
@@ -77,14 +83,14 @@ function MediaCard({ item, onRated }) {
 
     if (status === 'available') {
       return (
-        <button className="media-button" type="button" disabled>
+        <button className="btn btn-primary" type="button" disabled style={{ opacity: 0.8, cursor: 'default' }}>
           Available
         </button>
       )
     }
 
     return (
-      <button className="media-button media-button-muted" type="button" disabled>
+      <button className="btn btn-ghost" type="button" disabled>
         Status unknown
       </button>
     )
@@ -111,10 +117,18 @@ function MediaCard({ item, onRated }) {
         {renderPrimaryAction()}
         <button
           type="button"
-          className="media-button-secondary"
+          className="btn btn-ghost"
           onClick={() => setShowRating((prev) => !prev)}
         >
           Seen it
+        </button>
+        <button
+          type="button"
+          className="btn btn-secondary"
+          disabled={submittingRating}
+          onClick={handleSkip}
+        >
+          Skip
         </button>
       </div>
       {showRating && (
@@ -123,7 +137,7 @@ function MediaCard({ item, onRated }) {
           <div className="media-rating-buttons">
             <button
               type="button"
-              className="media-button"
+              className="btn btn-secondary"
               disabled={submittingRating}
               onClick={() => handleRate('up')}
             >
@@ -131,7 +145,7 @@ function MediaCard({ item, onRated }) {
             </button>
             <button
               type="button"
-              className="media-button"
+              className="btn btn-secondary"
               disabled={submittingRating}
               onClick={() => handleRate('down')}
             >
@@ -145,4 +159,3 @@ function MediaCard({ item, onRated }) {
 }
 
 export default MediaCard
-
