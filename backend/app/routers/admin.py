@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 
 from ..config import settings
 from ..database import get_db
-from ..models import User
+from ..models import User, AppSetting
 from ..security import get_current_user
 from ..services.tautulli import tautulli_service
 from ..services.overseerr import overseerr_service
@@ -35,6 +35,18 @@ def _ensure_admin(user: User) -> None:
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Admin privileges required",
         )
+
+
+def _save_setting(db: Session, key: str, value: str) -> None:
+    """
+    Upsert a single app-level setting into the persistent store.
+    """
+    setting = db.query(AppSetting).filter(AppSetting.key == key).first()
+    if setting:
+        setting.value = value
+    else:
+        setting = AppSetting(key=key, value=value)
+        db.add(setting)
 
 
 @router.get("/settings")
@@ -68,23 +80,32 @@ async def update_settings(
     # Only update if value is provided (and not masked)
     if new_settings.TAUTULLI_URL:
         settings.TAUTULLI_URL = new_settings.TAUTULLI_URL
+        _save_setting(db, "TAUTULLI_URL", new_settings.TAUTULLI_URL)
     if new_settings.TAUTULLI_API_KEY and "***" not in new_settings.TAUTULLI_API_KEY:
         settings.TAUTULLI_API_KEY = new_settings.TAUTULLI_API_KEY
+        _save_setting(db, "TAUTULLI_API_KEY", new_settings.TAUTULLI_API_KEY)
 
     if new_settings.OVERSEERR_URL:
         settings.OVERSEERR_URL = new_settings.OVERSEERR_URL
+        _save_setting(db, "OVERSEERR_URL", new_settings.OVERSEERR_URL)
     if new_settings.OVERSEERR_API_KEY and "***" not in new_settings.OVERSEERR_API_KEY:
         settings.OVERSEERR_API_KEY = new_settings.OVERSEERR_API_KEY
+        _save_setting(db, "OVERSEERR_API_KEY", new_settings.OVERSEERR_API_KEY)
 
     if new_settings.AI_PROVIDER:
         settings.AI_PROVIDER = new_settings.AI_PROVIDER
+        _save_setting(db, "AI_PROVIDER", new_settings.AI_PROVIDER)
     if new_settings.AI_API_KEY and "***" not in new_settings.AI_API_KEY:
         settings.AI_API_KEY = new_settings.AI_API_KEY
+        _save_setting(db, "AI_API_KEY", new_settings.AI_API_KEY)
     if new_settings.AI_MODEL:
         settings.AI_MODEL = new_settings.AI_MODEL
+        _save_setting(db, "AI_MODEL", new_settings.AI_MODEL)
     if new_settings.TMDB_API_KEY and "***" not in new_settings.TMDB_API_KEY:
         settings.TMDB_API_KEY = new_settings.TMDB_API_KEY
+        _save_setting(db, "TMDB_API_KEY", new_settings.TMDB_API_KEY)
 
+    db.commit()
     return {"status": "updated"}
 
 

@@ -165,6 +165,7 @@ This document outlines the step-by-step plan to build Sagarr, an AI-powered medi
 - [x] **Task 6.3: Admin Bootstrap Flow**
     - Implement a simple bootstrap rule: the first successfully authenticated Plex user becomes admin (`User.is_admin = True`) during the `/api/auth/callback` flow if no admin exists yet.
     - Expose current admin status in the Admin Settings page (future UI enhancement).
+    - Persist admin-configured integration settings (Tautulli, Overseerr, AI, TMDb) in the database so they survive container restarts, while still allowing env vars to provide initial defaults.
     - **Dependencies:** 1.5, 5.1
 
 - [ ] **Task 6.4: Logging & Observability**

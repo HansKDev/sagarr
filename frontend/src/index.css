@@ -1,153 +1,131 @@
+/* filename: sagarr-theme.css */
+
+/* --- 1. CORE VARIABLES --- */
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-  color-scheme: dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+    /* Brand Colors - Concept A "Neural Compass" */
+    --sagarr-cyan: #06B6D4;
+    --sagarr-violet: #7C3AED; 
+    
+    /* UI Colors (Dark Mode) */
+    --bg-dark: #0F172A;
+    --bg-card: #1E293B;
+    --text-light: #F8FAFC;
+    --text-dim: #94A3B8;
+
+    /* Typography */
+    --font-stack: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
+/* --- 2. GLOBAL RESET --- */
 body {
-  margin: 0;
-  min-width: 320px;
-  min-height: 100vh;
+    background-color: var(--bg-dark);
+    color: var(--text-light);
+    font-family: var(--font-stack);
+    margin: 0;
+    /* Removed centering to allow normal flow, but kept min-height */
+    min-height: 100vh;
 }
 
-#root {
-  width: 100%;
-  margin: 0 auto;
+/* --- 3. LOGO COMPONENT STYLES --- */
+
+/* Wrapper for the full logo (Icon + Text) */
+.sagarr-logo-full {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    gap: 14px; /* Space between icon and text */
+    padding: 10px;
+    border-radius: 8px;
+    transition: background-color 0.2s ease;
+    cursor: pointer;
 }
 
+.sagarr-logo-full:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Sizing for the icon */
+.sagarr-icon {
+    width: 48px;
+    height: 48px;
+    display: block;
+}
+
+/* The SVG parts allow for CSS animation/interaction */
+.sagarr-icon .ring {
+    stroke: var(--sagarr-cyan);
+    transition: filter 0.3s ease;
+}
+
+.sagarr-icon .compass {
+    fill: var(--sagarr-violet);
+    stroke: var(--sagarr-violet);
+}
+
+/* Wordmark Typography */
+.sagarr-wordmark {
+    font-family: var(--font-stack);
+    font-weight: 800; /* Extra Bold */
+    font-size: 2rem;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+    
+    /* Gradient Text Fill */
+    background: linear-gradient(135deg, #FFFFFF 40%, var(--sagarr-cyan) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Hover Effect: Glow */
+.sagarr-logo-full:hover .sagarr-icon .ring {
+     filter: drop-shadow(0 0 6px var(--sagarr-cyan));
+}
+
+/* --- 4. APP LAYOUT UTILS --- */
 .app-container {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
 }
 
-nav {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.nav-header {
+    padding: 1rem 0;
+    margin-bottom: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.dashboard {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 1.5rem;
+.nav-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
 }
 
-.card {
-  background-color: #1f2933;
-  border-radius: 0.75rem;
-  padding: 1rem 1.25rem;
-  text-align: left;
+.nav-link {
+    color: var(--text-dim);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s;
 }
 
-.recommendation-row {
-  margin-top: 1.5rem;
+.nav-link:hover {
+    color: var(--text-light);
 }
 
-.recommendation-row-header {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-  margin-bottom: 0.75rem;
+.btn-logout {
+    background: transparent;
+    border: 1px solid var(--text-dim);
+    color: var(--text-light);
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
 }
 
-.recommendation-row-header h3 {
-  margin: 0;
-}
-
-.recommendation-row-reason {
-  margin: 0;
-  font-size: 0.85rem;
-  color: #a0aec0;
-}
-
-.recommendation-row-scroll {
-  display: flex;
-  gap: 0.75rem;
-  overflow-x: auto;
-  padding-bottom: 0.5rem;
-}
-
-.media-card {
-  min-width: 180px;
-  max-width: 220px;
-  background-color: #111827;
-  border-radius: 0.75rem;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
-
-.media-poster {
-  width: 100%;
-  height: 260px;
-  object-fit: cover;
-}
-
-.media-body {
-  padding: 0.75rem;
-}
-
-.media-title {
-  margin: 0 0 0.25rem;
-  font-size: 0.98rem;
-}
-
-.media-overview {
-  margin: 0;
-  font-size: 0.8rem;
-  color: #9ca3af;
-}
-
-.media-actions {
-  display: flex;
-  justify-content: space-between;
-  gap: 0.5rem;
-  padding: 0.75rem;
-}
-
-.media-button,
-.media-button-secondary {
-  flex: 1;
-  padding: 0.35rem 0.5rem;
-  font-size: 0.8rem;
-  border-radius: 999px;
-  border: none;
-  cursor: pointer;
-}
-
-.media-button {
-  background: linear-gradient(90deg, #f97316, #ef4444);
-  color: white;
-}
-
-.media-button-muted {
-  background: #374151;
-}
-
-.media-button-secondary {
-  background: transparent;
-  color: #e5e7eb;
-  border: 1px solid #4b5563;
-}
-
-.media-rating {
-  padding: 0.75rem;
-  border-top: 1px solid #1f2937;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.media-rating span {
-  font-size: 0.8rem;
-  color: #d1d5db;
-}
-
-.media-rating-buttons {
-  display: flex;
-  gap: 0.5rem;
+.btn-logout:hover {
+    border-color: var(--text-light);
+    background: rgba(255, 255, 255, 0.05);
 }

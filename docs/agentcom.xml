@@ -871,4 +871,33 @@
             - No behavior changes to the recommendation or metadata APIs; only the source of TMDB_API_KEY is now configurable at runtime via the admin UI instead of being env-only.
         </message>
     </session>
+    <session id="37">
+        <timestamp>2025-11-25T14:45:00+01:00</timestamp>
+        <agent>GPT-5.1</agent>
+        <status>In Progress</status>
+        <message>
+            Implemented persistent storage for admin-configured integration settings so they survive container restarts.
+
+            Backend:
+            - backend/app/models.py:
+              - Added AppSetting model (table app_settings) with key (PK), value (Text), and updated_at timestamp.
+            - backend/app/routers/admin.py:
+              - Imported AppSetting and added a helper _save_setting(db, key, value) to upsert settings.
+              - update_settings() now:
+                - Updates in-memory config.settings as before.
+                - Persists TAUTULLI_URL, TAUTULLI_API_KEY, OVERSEERR_URL, OVERSEERR_API_KEY, AI_PROVIDER, AI_API_KEY, AI_MODEL, TMDB_API_KEY into app_settings via _save_setting().
+                - Calls db.commit() so changes are durable.
+            - backend/app/main.py:
+              - Introduced _load_persistent_settings() which:
+                - On startup, queries all AppSetting rows and applies them onto the global settings object, overriding env defaults.
+              - startup_event() now calls _load_persistent_settings() before starting the nightly recommendation loop.
+
+            Behavior:
+            - Admin edits via /api/admin/settings now update both the running config and the SQLite app_settings table.
+            - On container restart, Sagarr rehydrates these values from the database, so Tautulli/Overseerr/AI/TMDb settings are preserved without needing to re-enter them or bake them into docker-compose env vars.
+
+            Docs:
+            - docs/todo.md (Task 6.3 note) updated to mention persistence of admin-configured settings alongside the admin bootstrap flow.
+        </message>
+    </session>
 </agentcom>
