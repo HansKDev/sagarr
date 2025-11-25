@@ -28,6 +28,7 @@ class MediaItem(BaseModel):
     title: str | None = None
     overview: str | None = None
     poster_url: str | None = None
+    media_type: Literal["movie", "tv"] = "movie"
 
 
 class RecommendationCategory(BaseModel):
@@ -37,7 +38,9 @@ class RecommendationCategory(BaseModel):
 
 
 class RecommendationsResponse(BaseModel):
-    categories: list[RecommendationCategory]
+    movies: list[RecommendationCategory] = []
+    tv: list[RecommendationCategory] = []
+    documentaries: list[RecommendationCategory] = []
 
 
 class MediaStatusResponse(BaseModel):
@@ -47,6 +50,7 @@ class MediaStatusResponse(BaseModel):
 
 class RateMediaRequest(BaseModel):
     rating: Literal["up", "down"]
+    media_type: Literal["movie", "tv"] = "movie"
 
 
 class MediaRequestBody(BaseModel):
@@ -57,3 +61,16 @@ class MessageResponse(BaseModel):
     message: str
 
 
+from datetime import datetime
+
+class HistoryItem(BaseModel):
+    tmdb_id: int
+    media_type: str | None = "movie"
+    rating: int
+    created_at: datetime
+    title: str | None = None
+    poster_url: str | None = None
+
+
+class HistoryResponse(BaseModel):
+    history: list[HistoryItem]

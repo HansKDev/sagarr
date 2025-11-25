@@ -12,7 +12,8 @@ function MediaCard({ item, onRated }) {
     const fetchStatus = async () => {
       try {
         setLoadingStatus(true)
-        const res = await axios.get(`/api/media/${item.tmdb_id}/status`)
+        const mediaType = item.media_type || 'movie'
+        const res = await axios.get(`/api/media/${item.tmdb_id}/status?media_type=${mediaType}`)
         if (!cancelled) {
           setStatus(res.data.status || 'unknown')
         }
@@ -29,11 +30,12 @@ function MediaCard({ item, onRated }) {
     return () => {
       cancelled = true
     }
-  }, [item.tmdb_id])
+  }, [item.tmdb_id, item.media_type])
 
   const handleRequest = async () => {
     try {
-      await axios.post(`/api/media/${item.tmdb_id}/request`, { media_type: 'movie' })
+      const mediaType = item.media_type || 'movie'
+      await axios.post(`/api/media/${item.tmdb_id}/request`, { media_type: mediaType })
       setStatus('requested')
     } catch (err) {
       console.error(err)

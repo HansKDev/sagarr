@@ -3,7 +3,9 @@ import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-ro
 import Dashboard from './components/Dashboard'
 import Login from './components/Login'
 import LoginCallback from './components/LoginCallback'
+import History from './components/History'
 import AdminSettings from './components/AdminSettings'
+import Logo from './components/Logo'
 import { initAuthFromStorage } from './apiClient.js'
 
 function ProtectedRoute({ children }) {
@@ -29,24 +31,33 @@ function App() {
   return (
     <Router>
       <div className="app-container">
-        <nav style={{ padding: '1rem', borderBottom: '1px solid #333', marginBottom: '2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-            <h1 style={{ margin: 0 }}>Sagarr</h1>
+        <nav className="nav-header">
+          <Link to="/" style={{ textDecoration: 'none' }}>
+            <Logo />
+          </Link>
+
+          <div className="nav-actions">
             {localStorage.getItem('token') && (
-              <Link to="/admin" style={{ color: '#ccc', textDecoration: 'none', fontSize: '0.9rem' }}>Admin</Link>
+              <>
+                <Link to="/history" className="nav-link">History</Link>
+                <Link to="/admin" className="nav-link">Admin</Link>
+                <button onClick={handleLogout} className="btn-logout">
+                  Logout
+                </button>
+              </>
             )}
           </div>
-          {localStorage.getItem('token') && (
-            <button onClick={handleLogout} style={{ background: 'transparent', border: '1px solid #666', color: 'white', padding: '0.5rem 1rem', cursor: 'pointer' }}>
-              Logout
-            </button>
-          )}
         </nav>
 
         <Routes>
           <Route path="/" element={
             <ProtectedRoute>
               <Dashboard />
+            </ProtectedRoute>
+          } />
+          <Route path="/history" element={
+            <ProtectedRoute>
+              <History />
             </ProtectedRoute>
           } />
           <Route path="/admin" element={

@@ -62,6 +62,13 @@ This document outlines the step-by-step plan to build Sagarr, an AI-powered medi
     - **Config:** Add `OVERSEERR_URL` and `OVERSEERR_API_KEY` to environment variables.
     - **Dependencies:** 1.2
 
+- [x] **Task 2.3b: Smart Series Requesting**
+    - Update `services/overseerr.py` to handle TV requests differently.
+    - **Logic:** When requesting a TV show, explicitly request Seasons 1, 2, and 3 (if available) instead of just the default behavior.
+    - **Dependencies:** 2.3
+
+
+
 - [x] **Task 2.4: Database Schema Expansion**
     - Add models for:
         - `RecommendationCache`: Stores generated recommendations for a user (user_id, json_blob, created_at).
@@ -105,6 +112,11 @@ This document outlines the step-by-step plan to build Sagarr, an AI-powered medi
     - Fetch cached recommendations from `GET /api/recommendations` and render them.
     - **Dependencies:** 1.3, 3.4
 
+- [x] **Task 4.7: Split Recommendations (Movies vs TV)**
+    - Update Backend to generate and store separate lists for Movies and TV.
+    - Update Frontend Dashboard to include a toggle/tab system.
+    - **Dependencies:** 4.1
+
 - [x] **Task 4.2: Media Card Actions**
     - Implement hover/click state on `MediaCard`.
     - **Logic:**
@@ -119,6 +131,30 @@ This document outlines the step-by-step plan to build Sagarr, an AI-powered medi
     - **Backend:** `POST /api/media/{tmdb_id}/rate` -> Updates `UserPreference` table.
     - **Frontend:** Optimistically hide the card from the UI upon submission.
     - **Dependencies:** 2.4, 4.2
+
+- [x] **Task 4.4: Comprehensive Action Logging**
+    - Update `POST /api/media/{tmdb_id}/request` to also insert a `UserPreference` record (Rating: 2) upon success.
+    - Ensure "Skip" actions are logged as dislikes (Rating: -1).
+    - **Dependencies:** 4.2
+
+- [x] **Task 4.5: User History & Data Management UI**
+    - Create a "My History" page accessible from the User Profile.
+    - Display a paginated list of all `UserPreference` records (Requests, Likes, Dislikes).
+    - **Actions:**
+        - **Change Rating:** Allow toggling between Thumbs Up/Down.
+        - **Delete:** Allow removing a record entirely (undoing the interaction).
+    - **Backend:** Update `POST /api/media/{tmdb_id}/rate` to handle updates, and add `DELETE /api/media/{tmdb_id}/rate`.
+    - **Dependencies:** 4.4
+
+- [x] **Task 4.6: Dashboard Cleanup**
+    - Remove the raw "Backend Status" JSON dump from the main Dashboard view.
+    - Ensure the dashboard looks clean and consumer-ready.
+    - **Dependencies:** 4.1
+
+- [x] **Task 4.8: Documentary Support**
+    - **Backend:** Update `services/recommendations.py` to identify documentaries (via Genre ID 99) and separate them into a third list.
+    - **Frontend:** Add a "Documentaries" tab to the Dashboard.
+    - **Dependencies:** 4.7
 
 ## Phase 5: Polish & Deployment
 *Goal: Make it production-ready.*
@@ -147,29 +183,45 @@ This document outlines the step-by-step plan to build Sagarr, an AI-powered medi
     - Finalize `README.md`.
     - **Dependencies:** All previous tasks.
 
-## Phase 6: Saltbox-style Integration (Optional)
-*Goal: Make Sagarr easy to run as part of a Saltbox-like media stack (Traefik, shared proxy network, consistent env/secrets).*
+## Phase 6: Saltbox Integration (Ready for Deployment)
+*Goal: Make Sagarr deployable on a standard Saltbox stack with Traefik, proper permissions, and standard paths.*
 
-- [ ] **Task 6.1: Reverse Proxy Integration**
-    - Add Traefik (or similar) labels to `docker-compose.yml` (hostnames, entrypoints, middlewares).
-    - Ensure backend and frontend services join the appropriate proxy network(s).
-    - Document recommended hostnames/paths in a Saltbox-style install guide.
+- [x] **Task 6.1: Docker Compose for Saltbox**
+    - Update `docker-compose.yml`:
+        - Add `networks: proxy: external: true`.
+        - Add `restart: unless-stopped` to services.
+        - Add `user: "${PUID}:${PGID}"` support (or ensure internal permissions work with mapped volumes).
+        - Add Traefik labels to the **Frontend** service:
+            - `traefik.enable=true`
+            - `traefik.http.routers.sagarr.rule=Host(\`sagarr.YOURDOMAIN.COM\`)` (using env var for domain).
+            - `traefik.http.routers.sagarr.entrypoints=websecure`
+            - `traefik.http.routers.sagarr.tls.certresolver=letsencrypt` (or standard resolver).
+            - `traefik.http.services.sagarr.loadbalancer.server.port=80` (internal nginx port).
     - **Dependencies:** 5.2
 
-- [ ] **Task 6.2: Production Secrets & Config**
-    - Enforce a non-default `SECRET_KEY` in production (fail fast if using the development default).
-    - Document required environment variables and their roles: `DATABASE_URL`, `TAUTULLI_URL`, `TAUTULLI_API_KEY`, `OVERSEERR_URL`, `OVERSEERR_API_KEY`, `AI_PROVIDER`, `AI_API_KEY`, `AI_MODEL`, `TMDB_API_KEY`, `FRONTEND_URL`.
-    - Align `.env` examples and Docker docs with Saltbox expectations.
-    - **Dependencies:** 5.2, 5.3
+- [x] **Task 6.2: Environment Standardization**
+    - Create `saltbox.env.example` containing:
+        - `PUID`, `PGID`, `TZ`.
+        - `DOMAINNAME` (for Traefik rules).
+        - `SAGARR_HOST` (for internal referencing).
+        - All app secrets (`SECRET_KEY`, `TMDB_API_KEY`, etc.).
+    - Update `backend/app/config.py` to respect `TZ` if needed (mostly for logging timestamps).
+    - **Dependencies:** 5.2
 
-- [x] **Task 6.3: Admin Bootstrap Flow**
-    - Implement a simple bootstrap rule: the first successfully authenticated Plex user becomes admin (`User.is_admin = True`) during the `/api/auth/callback` flow if no admin exists yet.
-    - Expose current admin status in the Admin Settings page (future UI enhancement).
-    - Persist admin-configured integration settings (Tautulli, Overseerr, AI, TMDb) in the database so they survive container restarts, while still allowing env vars to provide initial defaults.
-    - **Dependencies:** 1.5, 5.1
+- [x] **Task 6.3: Path & Permission Hardening**
+    - Ensure `Dockerfile` setups respect user permissions for the `/app/data` volume (SQLite DB).
+    - Verify that the application writes logs/DB to the mounted volume correctly when running as a non-root user (Saltbox standard).
+    - **Dependencies:** 5.2
 
-- [ ] **Task 6.4: Logging & Observability**
-    - Replace `print`-style logging in Tautulli/Overseerr/AI services with structured logs to stdout.
-    - Improve error surfaces for common failures (e.g., distinguish "service unreachable" vs "bad API key").
-    - Optionally add lightweight request/response logging around critical endpoints (`/api/recommendations`, `/api/media/*`).
-    - **Dependencies:** 2.1, 2.3, 3.1
+- [x] **Task 6.4: Admin Bootstrap & Persistence**
+    - *Completed in Phase 5 polish.*
+    - (First user becomes admin; settings persist to DB).
+
+- [x] **Task 6.5: Saltbox Documentation**
+    - Create `docs/saltbox_setup.md`.
+    - Instructions for:
+        1. Creating the folder structure (`/opt/sagarr`).
+        2. Copying `docker-compose.yml` and `.env`.
+        3. Setting up the proxy network if missing.
+        4. Running `docker compose up -d`.
+    - **Dependencies:** 6.1, 6.2

@@ -1,0 +1,84 @@
+/* filename: sagarr-theme.css */
+
+/* --- 1. CORE VARIABLES --- */
+:root {
+    /* Brand Colors - Concept A "Neural Compass" */
+    --sagarr-cyan: #06B6D4;
+    --sagarr-violet: #7C3AED; 
+    
+    /* UI Colors (Dark Mode) */
+    --bg-dark: #0F172A;
+    --bg-card: #1E293B;
+    --text-light: #F8FAFC;
+    --text-dim: #94A3B8;
+
+    /* Typography */
+    --font-stack: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* --- 2. GLOBAL RESET --- */
+body {
+    background-color: var(--bg-dark);
+    color: var(--text-light);
+    font-family: var(--font-stack);
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+/* --- 3. LOGO COMPONENT STYLES --- */
+
+/* Wrapper for the full logo (Icon + Text) */
+.sagarr-logo-full {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    gap: 14px; /* Space between icon and text */
+    padding: 10px;
+    border-radius: 8px;
+    transition: background-color 0.2s ease;
+}
+
+.sagarr-logo-full:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Sizing for the icon */
+.sagarr-icon {
+    width: 48px;
+    height: 48px;
+    display: block;
+}
+
+/* The SVG parts allow for CSS animation/interaction */
+.sagarr-icon .ring {
+    stroke: var(--sagarr-cyan);
+    transition: filter 0.3s ease;
+}
+
+.sagarr-icon .compass {
+    fill: var(--sagarr-violet);
+    stroke: var(--sagarr-violet);
+}
+
+/* Wordmark Typography */
+.sagarr-wordmark {
+    font-family: var(--font-stack);
+    font-weight: 800; /* Extra Bold */
+    font-size: 2rem;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+    
+    /* Gradient Text Fill */
+    background: linear-gradient(135deg, #FFFFFF 40%, var(--sagarr-cyan) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Hover Effect: Glow */
+.sagarr-logo-full:hover .sagarr-icon .ring {
+     filter: drop-shadow(0 0 6px var(--sagarr-cyan));
+}

@@ -12,11 +12,12 @@
 
 ## 3. Core Features
 *   **Dynamic AI Categories:** The system generates unique, descriptive category titles based on the user's specific mood and history.
-*   **"Netflix-style" Dashboard:** A visual feed of recommendation rows.
+*   **"Netflix-style" Dashboard:** A visual feed of recommendation rows, **separated into "Movies", "TV Series", and "Documentaries" tabs**.
 *   **Smart Action Buttons:**
     *   *If Available:* "Add to Plex Watchlist".
-    *   *If Missing:* "Request" (via Overseerr).
+    *   *If Missing:* "Request" (via Overseerr). **For TV Series, this defaults to requesting the first 3 seasons.**
 *   **"Seen It" Workflow:** A mechanism for users to mark items as seen and immediately rate them (Thumbs Up/Down) to improve future suggestions.
+*   **User Data Management:** A dedicated interface for users to view, edit, or delete their rating history (Requests, Likes, Dislikes) to have full control over their data.
 *   **Hybrid AI Configuration:** Admins can configure different AI models for different tasks (e.g., cheap models for summarization, powerful models for creative generation).
 
 ## 4. Core Components
@@ -33,10 +34,12 @@
 4.  **Interact:**
     *   User clicks a movie card.
     *   System checks **Overseerr** for availability.
-    *   *Scenario A (Missing):* User clicks "Request". Item is added to Overseerr and hidden from feed.
+    *   *Scenario A (Missing):* User clicks "Request". Item is added to Overseerr, hidden from feed, and **logged as a high-priority positive preference** (Rating: 2).
     *   *Scenario B (Available):* User clicks "Watchlist". Item is added to Plex Watchlist.
-    *   *Scenario C (Already Seen):* User clicks "Seen It" (eye icon) -> Selects "Thumbs Up" or "Down". Item is hidden and preference is saved.
+    *   *Scenario C (Already Seen):* User clicks "Seen It" (eye icon) -> Selects "Thumbs Up" (Rating: 1) or "Down" (Rating: -1). Item is hidden and preference is saved.
+    *   *Scenario D (Skip):* User clicks "Skip". Item is hidden and logged as a dislike (Rating: -1).
 5.  **Refine:** Background job uses new feedback to adjust the next batch of recommendations.
+6.  **History:** Users can view a log of their interactions (Requests, Likes, Dislikes) to manage their preferences.
 
 ## 6. Techstack
 *   **Backend:** Python (FastAPI)
@@ -78,9 +81,15 @@
 *   Perform end-to-end testing.
 *   Write documentation and release.
 
-### Phase 6: Saltbox-style Integration (Optional)
-*   Add reverse-proxy integration (e.g., Traefik labels, shared proxy network, and hostname/path conventions) so Sagarr can be exposed consistently alongside other media services.
-*   Harden configuration and secrets handling for production:
-    *   Require a non-default `SECRET_KEY` and document required environment variables (`TAUTULLI_*`, `OVERSEERR_*`, `AI_*`, `TMDB_API_KEY`, `DATABASE_URL`).
-*   Implement an admin bootstrap flow (e.g., "first Plex user becomes admin" or an env/CLI seed) so `User.is_admin` can be set without manual DB edits.
-*   Improve logging and observability (structured logs, clearer errors for Tautulli/Overseerr/AI failures) to match expectations of an always-on, monitored service.
+### Phase 6: Saltbox Integration (Ready for Deployment)
+*   **Container Standardization:**
+    *   Support standard Saltbox environment variables: `PUID`, `PGID`, `TZ`.
+    *   Ensure containers restart automatically (`restart: unless-stopped`).
+*   **Reverse Proxy (Traefik):**
+    *   Configure `docker-compose.yml` with Traefik labels for automatic SSL and domain routing (e.g., `sagarr.YOURDOMAIN.COM`).
+    *   Connect services to the standard `proxy` Docker network.
+*   **Configuration & Secrets:**
+    *   Consolidate all configuration into a single `.env` file template compatible with Saltbox's `sb_install` patterns.
+    *   Ensure paths (config, data) are mapped to standard locations (`/opt/sagarr/config`, etc.).
+*   **Documentation:**
+    *   Create a specific `docs/saltbox_setup.md` guide detailing the install process on a Saltbox server.

@@ -2,22 +2,44 @@ services:
   backend:
     build: ./backend
     container_name: sagarr-backend
-    network_mode: host
     volumes:
       - ./backend:/app
       - sagarr-data:/app/data
     environment:
       - DATABASE_URL=sqlite:///./data/sagarr.db
-      - FRONTEND_URL=http://localhost:8081
+      - FRONTEND_URL=${FRONTEND_URL:-http://localhost:8081}
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+      - TZ=${TZ:-UTC}
     restart: unless-stopped
+    ports:
+      - "8000:8000"
+    networks:
+      - default
 
   frontend:
     build: ./frontend
     container_name: sagarr-frontend
-    network_mode: host
     depends_on:
       - backend
     restart: unless-stopped
+    ports:
+      - "8081:80"
+    networks:
+      - default
+      - proxy
+    labels:
+      - "traefik.enable=true"
+      ## HTTP Routers
+      - "traefik.http.routers.sagarr.entrypoints=websecure"
+      - "traefik.http.routers.sagarr.rule=Host(`sagarr.${DOMAINNAME}`)"
+      - "traefik.http.routers.sagarr.tls.certresolver=letsencrypt"
+      ## Service
+      - "traefik.http.services.sagarr.loadbalancer.server.port=80"
 
 volumes:
   sagarr-data:
+
+networks:
+  proxy:
+    external: true

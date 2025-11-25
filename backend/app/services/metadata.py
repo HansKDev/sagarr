@@ -9,11 +9,13 @@ class MetadataNotConfiguredError(RuntimeError):
     pass
 
 
-async def fetch_tmdb_details(tmdb_ids: list[int]) -> list[dict[str, Any]]:
+async def fetch_tmdb_details(tmdb_ids: list[int], media_type: str = "movie") -> list[dict[str, Any]]:
     """
     Fetch basic metadata (title, poster, overview) for a list of TMDb IDs.
-
-    Uses TMDb API directly. This can later be swapped to go via Overseerr if preferred.
+    
+    Args:
+        tmdb_ids: List of integer TMDb IDs.
+        media_type: 'movie' or 'tv'.
     """
     settings = get_settings()
     if not settings.tmdb_api_key:
@@ -25,9 +27,16 @@ async def fetch_tmdb_details(tmdb_ids: list[int]) -> list[dict[str, Any]]:
     results: list[dict[str, Any]] = []
     async with httpx.AsyncClient(base_url=base_url, timeout=30) as client:
         for tmdb_id in tmdb_ids:
-            resp = await client.get(f"/movie/{tmdb_id}", params={"api_key": api_key, "language": "en-US"})
-            if resp.status_code == 200:
-                results.append(resp.json())
+            endpoint = f"/{media_type}/{tmdb_id}"
+            try:
+                resp = await client.get(endpoint, params={"api_key": api_key, "language": "en-US"})
+                if resp.status_code == 200:
+                    data = resp.json()
+                    # Normalize title/name
+                    if "name" in data and "title" not in data:
+                        data["title"] = data["name"]
+                    results.append(data)
+            except Exception as e:
+                print(f"Error fetching metadata for {media_type} {tmdb_id}: {e}")
 
     return results
-

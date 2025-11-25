@@ -34,15 +34,8 @@ function Login() {
             <button
                 onClick={handleLogin}
                 disabled={loading}
-                style={{
-                    padding: '1rem 2rem',
-                    fontSize: '1.2rem',
-                    backgroundColor: '#e5a00d',
-                    color: 'black',
-                    border: 'none',
-                    borderRadius: '4px',
-                    cursor: 'pointer'
-                }}
+                className="btn btn-primary"
+                style={{ padding: '1rem 2rem', fontSize: '1.2rem' }}
             >
                 {loading ? 'Connecting...' : 'Sign in with Plex'}
             </button>

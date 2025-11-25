@@ -3,16 +3,10 @@ import axios from 'axios'
 import RecommendationRow from './RecommendationRow'
 
 function Dashboard() {
-  const [health, setHealth] = useState(null)
-  const [categories, setCategories] = useState([])
+  const [data, setData] = useState({ movies: [], tv: [], documentaries: [] })
+  const [activeTab, setActiveTab] = useState('movies') // 'movies' | 'tv' | 'documentaries'
   const [loadingRecs, setLoadingRecs] = useState(false)
   const [error, setError] = useState(null)
-
-  useEffect(() => {
-    axios.get('/api/health')
-      .then((res) => setHealth(res.data))
-      .catch((err) => console.error(err))
-  }, [])
 
   useEffect(() => {
     const fetchRecommendations = async () => {
@@ -20,7 +14,11 @@ function Dashboard() {
         setLoadingRecs(true)
         setError(null)
         const res = await axios.get('/api/recommendations')
-        setCategories(res.data.categories || [])
+        // Handle both legacy and new formats gracefully
+        const movies = res.data.movies || res.data.categories || []
+        const tv = res.data.tv || []
+        const documentaries = res.data.documentaries || []
+        setData({ movies, tv, documentaries })
       } catch (err) {
         console.error(err)
         setError('Failed to load recommendations')
@@ -33,32 +31,60 @@ function Dashboard() {
   }, [])
 
   const handleRated = (tmdbId) => {
-    setCategories((prev) =>
-      prev.map((cat) => ({
+    // Remove item from the active list
+    setData((prev) => ({
+      ...prev,
+      [activeTab]: prev[activeTab].map((cat) => ({
         ...cat,
         items: cat.items.filter((item) => item.tmdb_id !== tmdbId),
       })),
-    )
+    }))
   }
+
+  const activeCategories = data[activeTab] || []
 
   return (
     <div className="dashboard">
-      <h2>Dashboard</h2>
+      <div style={{ textAlign: 'left' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+          <h2 style={{ margin: 0, color: 'var(--text-light)' }}>Your Recommendations</h2>
 
-      <div className="card">
-        <h3>Backend Status</h3>
-        <pre>{JSON.stringify(health, null, 2)}</pre>
-      </div>
+          <div style={{ display: 'flex', gap: '0.5rem', background: 'var(--bg-card)', padding: '0.25rem', borderRadius: '8px' }}>
+            <button
+              onClick={() => setActiveTab('movies')}
+              className={activeTab === 'movies' ? 'btn btn-primary' : 'btn btn-ghost'}
+              style={{ fontSize: '0.9rem', padding: '0.4rem 1rem' }}
+            >
+              Movies
+            </button>
+            <button
+              onClick={() => setActiveTab('tv')}
+              className={activeTab === 'tv' ? 'btn btn-primary' : 'btn btn-ghost'}
+              style={{ fontSize: '0.9rem', padding: '0.4rem 1rem' }}
+            >
+              TV Series
+            </button>
+            <button
+              onClick={() => setActiveTab('documentaries')}
+              className={activeTab === 'documentaries' ? 'btn btn-primary' : 'btn btn-ghost'}
+              style={{ fontSize: '0.9rem', padding: '0.4rem 1rem' }}
+            >
+              Docs
+            </button>
+          </div>
+        </div>
 
-      <div style={{ marginTop: '2rem', textAlign: 'left' }}>
-        <h3>Recommendations</h3>
         {loadingRecs && <p>Loading recommendations...</p>}
         {error && <p style={{ color: 'red' }}>{error}</p>}
-        {!loadingRecs && !error && categories.length === 0 && (
-          <p>No recommendations yet. They will appear here once generated.</p>
+
+        {!loadingRecs && !error && activeCategories.length === 0 && (
+          <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-dim)' }}>
+            <p>No {activeTab === 'movies' ? 'movie' : activeTab === 'tv' ? 'TV' : 'documentary'} recommendations found.</p>
+            <p style={{ fontSize: '0.9rem' }}>Try watching more content or check back later!</p>
+          </div>
         )}
 
-        {categories.map((category) => (
+        {activeCategories.map((category) => (
           <RecommendationRow
             key={category.title}
             category={category}

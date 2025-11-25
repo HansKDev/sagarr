@@ -1,0 +1,10 @@
+<svg class="sagarr-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <circle class="ring" cx="50" cy="50" r="42" stroke-width="6" stroke-linecap="round" stroke-dasharray="50 16" transform="rotate(-20 50 50)"/>
+  
+  <g class="compass" transform="translate(50,50) rotate(-45)">
+    <line y1="-24" y2="24" stroke-width="4" stroke-linecap="round"/>
+    <circle cy="-24" r="7"/>
+    <circle r="8"/>
+    <circle cy="24" r="7"/>
+  </g>
+</svg>

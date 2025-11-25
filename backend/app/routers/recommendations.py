@@ -21,36 +21,12 @@ DbDep = Annotated[Session, Depends(get_db)]
 CurrentUserDep = Annotated[object, Depends(get_current_user)]
 
 
-@router.get("/api/recommendations", response_model=RecommendationsResponse)
-async def get_recommendations(
-    db: DbDep,
-    current_user: CurrentUserDep,
-) -> RecommendationsResponse:
+async def _enrich_categories(raw_categories: list[dict], media_type: str) -> list[RecommendationCategory]:
     """
-    Return the latest recommendation categories for the current user,
-    enriching TMDb IDs with basic metadata.
+    Helper to fetch metadata for a list of raw categories and return enriched objects.
     """
-    stmt = (
-        select(RecommendationCache)
-        .where(RecommendationCache.user_id == current_user.id)
-        .order_by(desc(RecommendationCache.created_at))
-    )
-    cache = db.execute(stmt).scalars().first()
-
-    if cache is None:
-        # No cache yet; generate on demand
-        try:
-            cache = await generate_recommendations(db, current_user.id)
-        except ValueError as exc:
-            # Surface mapping/config issues (e.g. missing Tautulli mapping)
-            raise HTTPException(status_code=400, detail=str(exc)) from exc
-
-    try:
-        data = json.loads(cache.recommendations or "{}")
-    except json.JSONDecodeError as exc:
-        raise HTTPException(status_code=500, detail="Invalid recommendation cache format") from exc
-
-    raw_categories = data.get("categories", []) or []
+    if not raw_categories:
+        return []
 
     # Collect TMDb IDs
     tmdb_ids: set[int] = set()
@@ -62,7 +38,7 @@ async def get_recommendations(
     metadata_map: dict[int, dict] = {}
     if tmdb_ids:
         try:
-            details = await fetch_tmdb_details(list(tmdb_ids))
+            details = await fetch_tmdb_details(list(tmdb_ids), media_type=media_type)
             for item in details:
                 tmdb_id = item.get("id")
                 if isinstance(tmdb_id, int):
@@ -91,8 +67,59 @@ async def get_recommendations(
                     title=name,
                     overview=meta.get("overview"),
                     poster_url=poster_url,
+                    media_type=media_type
                 )
             )
         categories.append(RecommendationCategory(title=title, reason=reason, items=items))
+    
+    return categories
 
-    return RecommendationsResponse(categories=categories)
+
+@router.get("/api/recommendations", response_model=RecommendationsResponse)
+async def get_recommendations(
+    db: DbDep,
+    current_user: CurrentUserDep,
+) -> RecommendationsResponse:
+    """
+    Return the latest recommendation categories for the current user,
+    enriching TMDb IDs with basic metadata. Returns both movies and tv.
+    """
+    stmt = (
+        select(RecommendationCache)
+        .where(RecommendationCache.user_id == current_user.id)
+        .order_by(desc(RecommendationCache.created_at))
+    )
+    cache = db.execute(stmt).scalars().first()
+
+    if cache is None:
+        # No cache yet; generate on demand
+        try:
+            cache = await generate_recommendations(db, current_user.id)
+        except ValueError as exc:
+            # Surface mapping/config issues (e.g. missing Tautulli mapping)
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    try:
+        data = json.loads(cache.recommendations or "{}")
+    except json.JSONDecodeError as exc:
+        raise HTTPException(status_code=500, detail="Invalid recommendation cache format") from exc
+
+    # Handle legacy format where "categories" was the only key (assumed movies)
+    raw_movies = data.get("movies", [])
+    if not raw_movies and "categories" in data:
+        raw_movies = data["categories"]
+    
+    raw_tv = data.get("tv", [])
+    raw_docs = data.get("documentaries", [])
+
+    movies_enriched = await _enrich_categories(raw_movies, "movie")
+    tv_enriched = await _enrich_categories(raw_tv, "tv")
+    # For now, we treat documentaries as movies. 
+    # Future improvement: Support mixed types or ask AI to split doc-series vs doc-movies.
+    docs_enriched = await _enrich_categories(raw_docs, "movie")
+
+    return RecommendationsResponse(
+        movies=movies_enriched, 
+        tv=tv_enriched, 
+        documentaries=docs_enriched
+    )

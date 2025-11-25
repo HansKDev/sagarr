@@ -77,6 +77,10 @@ class OverseerrService:
             "mediaType": media_type,
             "is4k": False,
         }
+        
+        # Smart Series Requesting: Default to first 3 seasons for TV
+        if media_type == "tv":
+            payload["seasons"] = [1, 2, 3]
 
         async with httpx.AsyncClient() as client:
             try:
@@ -96,14 +100,13 @@ class OverseerrNotConfiguredError(RuntimeError):
     pass
 
 
-async def check_availability(tmdb_id: int) -> dict:
+async def check_availability(tmdb_id: int, media_type: str = "movie") -> dict:
     """
     Convenience wrapper used by media router.
     """
     if not settings.OVERSEERR_URL or not settings.OVERSEERR_API_KEY:
         raise OverseerrNotConfiguredError("Overseerr is not configured.")
-    # We default to "movie" here; callers can be extended later to differentiate.
-    return await overseerr_service.check_availability(tmdb_id, media_type="movie")
+    return await overseerr_service.check_availability(tmdb_id, media_type=media_type)
 
 
 async def request_media(tmdb_id: int, media_type: str) -> dict:
