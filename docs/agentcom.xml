@@ -283,4 +283,34 @@
             - Mark Task 3.2 as completed in docs/todo.md once the team is comfortable with this prompt structure, then move on to validating/finishing Tasks 3.3 and 3.4.
         </message>
     </session>
+    <session id="17">
+        <timestamp>2025-11-25T10:51:14+01:00</timestamp>
+        <agent>GPT-5.1</agent>
+        <status>In Progress</status>
+        <message>
+            Finished wiring up the remaining Phase 3 tasks.
+
+            Task 3.3 (Metadata Enrichment):
+            - Confirmed that backend/app/services/metadata.py implements fetch_tmdb_details(tmdb_ids), calling TMDb with TMDB_API_KEY from config.
+            - Confirmed that backend/app/routers/recommendations.py already uses fetch_tmdb_details() to enrich TMDb IDs with title/poster/overview before returning recommendations to the frontend.
+            - Marked Task 3.3 as completed in docs/todo.md.
+
+            Task 3.4 (Background Scheduler):
+            - Implemented a simple async background loop in backend/app/main.py:
+              - Defines _refresh_recommendations_loop() which:
+                - Waits 5 seconds after startup, then:
+                - Opens a DB session, loads all User rows, and for each user calls generate_recommendations(db, user.id), swallowing individual errors.
+                - Closes the DB session and sleeps for 24 hours before repeating.
+              - Registers startup_event() with @app.on_event("startup") that kicks off the loop via asyncio.create_task().
+            - This satisfies the PRD requirement for a nightly scheduler (using a simple loop instead of APScheduler) and ensures RecommendationCache stays fresh without user interaction.
+            - Marked Task 3.4 as completed in docs/todo.md.
+
+            Notes:
+            - The scheduler currently refreshes all users once per 24h; we can refine cadence or add on-demand triggers later.
+            - All Phase 3 items (3.1–3.4) are now implemented and checked off in docs/todo.md.
+
+            Next Step:
+            - Focus on polish/bugfixes for the "Brain" and UI flows (e.g., better error handling for AI/metadata failures, optional logs/metrics), while leaving Phase 5 ownership with Antigravity as previously agreed.
+        </message>
+    </session>
 </agentcom>

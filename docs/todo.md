@@ -85,12 +85,12 @@ This document outlines the step-by-step plan to build Sagarr, an AI-powered medi
     - Implement `generate_recommendations(user_id)` function that orchestrates fetching history -> calling AI -> parsing JSON.
     - **Dependencies:** 2.1, 3.1
 
-- [ ] **Task 3.3: Metadata Enrichment**
+- [x] **Task 3.3: Metadata Enrichment**
     - The AI gives TMDb IDs. We need posters/titles.
     - Implement a `MetadataService` (using TMDb API or Overseerr proxy) to fetch details for the recommended IDs.
     - **Dependencies:** 3.2
 
-- [ ] **Task 3.4: Background Scheduler**
+- [x] **Task 3.4: Background Scheduler**
     - Set up a scheduler (e.g., `APScheduler` or a simple background loop).
     - Create a job `refresh_recommendations` that runs nightly (or on demand) for all active users.
     - Store results in `RecommendationCache`.
