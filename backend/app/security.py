@@ -37,7 +37,15 @@ def _decode_access_token(token: str) -> int:
 
 
 async def get_current_user(request: Request, db: Session = Depends(get_db)) -> User:
+    # Prefer HTTP-only cookie if present
     token = request.cookies.get("sagarr_session")
+
+    # Fallback: Authorization: Bearer <token> (used by current frontend)
+    if not token:
+        auth_header = request.headers.get("Authorization", "")
+        if auth_header.lower().startswith("bearer "):
+            token = auth_header.split(" ", 1)[1].strip()
+
     if not token:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -52,5 +60,4 @@ async def get_current_user(request: Request, db: Session = Depends(get_db)) -> U
             detail="User not found",
         )
     return user
-
 

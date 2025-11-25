@@ -313,4 +313,28 @@
             - Focus on polish/bugfixes for the "Brain" and UI flows (e.g., better error handling for AI/metadata failures, optional logs/metrics), while leaving Phase 5 ownership with Antigravity as previously agreed.
         </message>
     </session>
+    <session id="18">
+        <timestamp>2025-11-25T10:53:19+01:00</timestamp>
+        <agent>GPT-5.1</agent>
+        <status>In Progress</status>
+        <message>
+            Small but important polish: fixed authentication mismatch between frontend and backend for protected "Brain" endpoints.
+
+            Background:
+            - The existing auth flow (backend/app/routers/auth.py + frontend/src/App.jsx/Login*.jsx) issues a JWT and stores it in localStorage, then sends it as an Authorization: Bearer &lt;token&gt; header.
+            - Newer endpoints (recommendations/media) were using get_current_user() in backend/app/security.py, which previously only looked for a sagarr_session cookie, causing 401s when calling /api/recommendations and /api/media/*.
+
+            Change:
+            - backend/app/security.py:
+              - Updated get_current_user() to:
+                - First read the sagarr_session cookie (for future cookie-based auth, if adopted).
+                - If no cookie is present, fall back to the Authorization: Bearer header used by the current frontend.
+                - Decode the token via the existing JWT settings and resolve the User from the DB.
+            - This makes the recommendations and media routers compatible with the existing PIN-based login and header-based auth without changing the frontend.
+
+            Impact:
+            - /api/recommendations and /api/media/* now work with the current localStorage + Authorization header scheme.
+            - No changes were made to the auth router or frontend auth flow; Phase 1/2 auth behavior remains intact.
+        </message>
+    </session>
 </agentcom>
