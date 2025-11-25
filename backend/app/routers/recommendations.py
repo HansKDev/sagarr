@@ -21,7 +21,11 @@ DbDep = Annotated[Session, Depends(get_db)]
 CurrentUserDep = Annotated[object, Depends(get_current_user)]
 
 
-async def _enrich_categories(raw_categories: list[dict], media_type: str) -> list[RecommendationCategory]:
+async def _enrich_categories(
+    raw_categories: list[dict],
+    media_type: str,
+    watched_titles: set[str],
+) -> list[RecommendationCategory]:
     """
     Helper to fetch metadata for a list of raw categories and return enriched objects.
     """
@@ -59,6 +63,10 @@ async def _enrich_categories(raw_categories: list[dict], media_type: str) -> lis
                 continue
             meta = metadata_map.get(tmdb_id, {})
             name = meta.get("title") or meta.get("name")
+            # Skip items the user has already watched (by title).
+            norm_name = (name or "").strip().lower()
+            if norm_name and norm_name in watched_titles:
+                continue
             poster_path = meta.get("poster_path")
             poster_url = f"https://image.tmdb.org/t/p/w500{poster_path}" if poster_path else None
             items.append(
@@ -70,7 +78,8 @@ async def _enrich_categories(raw_categories: list[dict], media_type: str) -> lis
                     media_type=media_type
                 )
             )
-        categories.append(RecommendationCategory(title=title, reason=reason, items=items))
+        if items:
+            categories.append(RecommendationCategory(title=title, reason=reason, items=items))
     
     return categories
 
@@ -112,11 +121,13 @@ async def get_recommendations(
     raw_tv = data.get("tv", [])
     raw_docs = data.get("documentaries", [])
 
-    movies_enriched = await _enrich_categories(raw_movies, "movie")
-    tv_enriched = await _enrich_categories(raw_tv, "tv")
+    watched_titles = {t.strip().lower() for t in data.get("watched_titles", []) if isinstance(t, str)}
+
+    movies_enriched = await _enrich_categories(raw_movies, "movie", watched_titles)
+    tv_enriched = await _enrich_categories(raw_tv, "tv", watched_titles)
     # For now, we treat documentaries as movies. 
     # Future improvement: Support mixed types or ask AI to split doc-series vs doc-movies.
-    docs_enriched = await _enrich_categories(raw_docs, "movie")
+    docs_enriched = await _enrich_categories(raw_docs, "movie", watched_titles)
 
     return RecommendationsResponse(
         movies=movies_enriched, 

@@ -23,24 +23,25 @@ ADULT_KEYWORDS = [
 ]
 
 
+def _to_text(value: Any) -> str:
+    if isinstance(value, list):
+        return " ".join(str(v) for v in value)
+    return str(value or "")
+
+
 def _looks_adult(item: dict[str, Any]) -> bool:
     """
     Best-effort heuristic to filter out explicit adult content from the
     AI context using Tautulli fields (library name, genres, title, etc.).
     """
-    def to_text(value: Any) -> str:
-        if isinstance(value, list):
-            return " ".join(str(v) for v in value)
-        return str(value or "")
-
     combined = " ".join(
         [
-            to_text(item.get("genres")),
-            to_text(item.get("section_name")),
-            to_text(item.get("library_name")),
-            to_text(item.get("title")),
-            to_text(item.get("grandparent_title")),
-            to_text(item.get("tagline")),
+            _to_text(item.get("genres")),
+            _to_text(item.get("section_name")),
+            _to_text(item.get("library_name")),
+            _to_text(item.get("title")),
+            _to_text(item.get("grandparent_title")),
+            _to_text(item.get("tagline")),
         ]
     ).lower()
 
@@ -64,6 +65,15 @@ async def generate_recommendations(db: Session, user_id: int) -> RecommendationC
 
     # Strip out explicit adult content before it ever reaches the AI.
     tautulli_history = [item for item in tautulli_history if not _looks_adult(item)]
+
+    # Build a set of normalized titles the user has already watched so we can
+    # avoid recommending exact repeats later.
+    watched_titles: set[str] = set()
+    for item in tautulli_history:
+        name = item.get("grandparent_title") or item.get("title")
+        if not name:
+            continue
+        watched_titles.add(_to_text(name).strip().lower())
 
     # Split history by media type
     movies_history = [item for item in tautulli_history if item.get("media_type") == "movie"]
@@ -135,6 +145,7 @@ async def generate_recommendations(db: Session, user_id: int) -> RecommendationC
         },
         "likes": likes,
         "dislikes": dislikes,
+        "watched_titles": sorted(watched_titles),
     }
 
     system_prompt = (
