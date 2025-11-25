@@ -5,64 +5,67 @@ from ..config import settings
 
 
 class TautulliService:
-  def __init__(self) -> None:
-      self.base_url = settings.TAUTULLI_URL.rstrip("/")
-      self.api_key = settings.TAUTULLI_API_KEY
+    def __init__(self) -> None:
+        # Intentionally do not cache URL/API key here; they can be updated
+        # at runtime via the admin settings, so we always read from settings.
+        pass
 
-  def _build_url(self, params: dict) -> str:
-      query = "&".join([f"{k}={v}" for k, v in params.items()])
-      return f"{self.base_url}/api/v2?apikey={self.api_key}&{query}"
+    def _build_url(self, params: dict) -> str:
+        base_url = settings.TAUTULLI_URL.rstrip("/")
+        api_key = settings.TAUTULLI_API_KEY
+        query = "&".join([f"{k}={v}" for k, v in params.items()])
+        return f"{base_url}/api/v2?apikey={api_key}&{query}"
 
-  async def get_users(self):
-      """Fetch all users from Tautulli."""
-      if not self.base_url or not self.api_key:
-          return []
+    async def get_users(self):
+        """Fetch all users from Tautulli."""
+        if not settings.TAUTULLI_URL or not settings.TAUTULLI_API_KEY:
+            return []
 
-      async with httpx.AsyncClient() as client:
-          try:
-              url = self._build_url({"cmd": "get_users"})
-              resp = await client.get(url)
-              resp.raise_for_status()
-              data = resp.json()
-              response_obj = data.get("response", {})
-              data_obj = response_obj.get("data", [])
+        async with httpx.AsyncClient() as client:
+            try:
+                url = self._build_url({"cmd": "get_users"})
+                resp = await client.get(url)
+                resp.raise_for_status()
+                data = resp.json()
+                response_obj = data.get("response", {})
+                data_obj = response_obj.get("data", [])
 
-              # Tautulli may return the users list either directly as `data: []`
-              # or nested under `data: { users: [] }`. Handle both.
-              if isinstance(data_obj, list):
-                  return data_obj
-              if isinstance(data_obj, dict):
-                  users = data_obj.get("users")
-                  if isinstance(users, list):
-                      return users
+                # Tautulli may return the users list either directly as `data: []`
+                # or nested under `data: { users: [] }`. Handle both.
+                if isinstance(data_obj, list):
+                    return data_obj
+                if isinstance(data_obj, dict):
+                    users = data_obj.get("users")
+                    if isinstance(users, list):
+                        return users
 
-              return []
-          except Exception as e:
-              print(f"Error fetching Tautulli users: {e}")
-              return []
+                return []
+            except Exception as e:
+                print(f"Error fetching Tautulli users: {e}")
+                return []
 
-  async def get_user_history(self, user_id: int, length: int = 50):
-      """Fetch watch history for a specific user."""
-      if not self.base_url or not self.api_key:
-          return []
+    async def get_user_history(self, user_id: int, length: int = 50):
+        """Fetch watch history for a specific user."""
+        if not settings.TAUTULLI_URL or not settings.TAUTULLI_API_KEY:
+            return []
 
-      async with httpx.AsyncClient() as client:
-          try:
-              url = self._build_url(
-                  {
-                      "cmd": "get_history",
-                      "user_id": user_id,
-                      "length": length,
-                      "media_type": "movie,episode",
-                  }
-              )
-              resp = await client.get(url)
-              resp.raise_for_status()
-              data = resp.json()
-              return data.get("response", {}).get("data", {}).get("data", [])
-          except Exception as e:
-              print(f"Error fetching Tautulli history: {e}")
-              return []
+        async with httpx.AsyncClient() as client:
+            try:
+                url = self._build_url(
+                    {
+                        "cmd": "get_history",
+                        "user_id": user_id,
+                        "length": length,
+                        "media_type": "movie,episode",
+                    }
+                )
+                resp = await client.get(url)
+                resp.raise_for_status()
+                data = resp.json()
+                return data.get("response", {}).get("data", {}).get("data", [])
+            except Exception as e:
+                print(f"Error fetching Tautulli history: {e}")
+                return []
 
 
 tautulli_service = TautulliService()

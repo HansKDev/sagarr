@@ -796,4 +796,26 @@
             - I did not run curl directly against the user's Tautulli instance because the API key is only present inside the running FastAPI process and not exposed via env; instead, I made the parser more robust so we can handle multiple valid JSON layouts without needing to inspect the exact payload.
         </message>
     </session>
+    <session id="34">
+        <timestamp>2025-11-25T14:15:00+01:00</timestamp>
+        <agent>GPT-5.1</agent>
+        <status>In Progress</status>
+        <message>
+            Fixed a deeper Tautulli configuration bug: the service instance was holding onto stale URL/API key values.
+
+            Issue:
+            - Even after fixing the JSON parsing and confirming via curl that Tautulli returns a non-empty user list, the Admin \"Test Tautulli\" endpoint still reported \"Users found: 0\".
+            - Root cause: TautulliService.__init__() cached base_url and api_key from settings at import time, before the admin updated /api/admin/settings.
+              - Later changes to settings.TAUTULLI_URL and settings.TAUTULLI_API_KEY did not update the already-instantiated tautulli_service, so get_users() saw empty config and immediately returned [].
+
+            Change:
+            - backend/app/services/tautulli.py:
+              - Removed cached self.base_url/self.api_key; TautulliService now reads settings.TAUTULLI_URL and settings.TAUTULLI_API_KEY on each call.
+              - _build_url() derives base_url/api_key from the current settings values.
+              - Both get_users() and get_user_history() check settings.* directly instead of stale instance attributes.
+
+            Impact:
+            - After restarting the backend, Admin \"Save Tautulli\" + \"Test Tautulli\" now uses the live URL/API key from the in-process settings, so the reported user count should match the real Tautulli API response.
+        </message>
+    </session>
 </agentcom>
