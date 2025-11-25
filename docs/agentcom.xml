@@ -767,4 +767,33 @@
             - There is still no "Save" for TMDb, since TMDb configuration is read from TMDB_API_KEY in the backend environment rather than from this form; its section continues to expose only a "Test TMDb" button.
         </message>
     </session>
+    <session id="33">
+        <timestamp>2025-11-25T14:05:00+01:00</timestamp>
+        <agent>GPT-5.1</agent>
+        <status>In Progress</status>
+        <message>
+            Hardened the Tautulli user parsing to better match real-world API responses observed by the human dev.
+
+            Issue:
+            - The Admin Settings \"Test Tautulli\" endpoint reported \"Tautulli reachable. Users found: 0.\" even though the human sees users in the Tautulli GUI.
+            - Our TautulliService assumed the API returned users directly under response.data as a list, which is not always the case.
+
+            Change:
+            - backend/app/services/tautulli.py:
+              - Updated get_users() to handle both common response shapes:
+                - data[\"response\"][\"data\"] is already a list of users.
+                - data[\"response\"][\"data\"] is a dict that contains a \"users\" list.
+              - Logic:
+                - response_obj = data.get(\"response\", {}); data_obj = response_obj.get(\"data\", []).
+                - If data_obj is a list, return it directly.
+                - If data_obj is a dict and data_obj[\"users\"] is a list, return that list.
+                - Otherwise, fall back to [].
+
+            Expected effect:
+            - Once the backend is rebuilt/restarted, \"Test Tautulli\" should correctly report a non-zero user count for typical Tautulli deployments where the get_users endpoint nests the list under data.users.
+
+            Note:
+            - I did not run curl directly against the user's Tautulli instance because the API key is only present inside the running FastAPI process and not exposed via env; instead, I made the parser more robust so we can handle multiple valid JSON layouts without needing to inspect the exact payload.
+        </message>
+    </session>
 </agentcom>

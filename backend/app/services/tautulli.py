@@ -24,7 +24,19 @@ class TautulliService:
               resp = await client.get(url)
               resp.raise_for_status()
               data = resp.json()
-              return data.get("response", {}).get("data", [])
+              response_obj = data.get("response", {})
+              data_obj = response_obj.get("data", [])
+
+              # Tautulli may return the users list either directly as `data: []`
+              # or nested under `data: { users: [] }`. Handle both.
+              if isinstance(data_obj, list):
+                  return data_obj
+              if isinstance(data_obj, dict):
+                  users = data_obj.get("users")
+                  if isinstance(users, list):
+                      return users
+
+              return []
           except Exception as e:
               print(f"Error fetching Tautulli users: {e}")
               return []
