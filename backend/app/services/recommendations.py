@@ -170,7 +170,12 @@ async def generate_recommendations(db: Session, user_id: int) -> RecommendationC
     prompt = (
         "Here is the user's viewing context as JSON.\n\n"
         f"{json.dumps(user_context, ensure_ascii=False)}\n\n"
-        "Using this data, generate several recommendation categories tailored to the user, separated by 'movies', 'tv', and 'documentaries'. "
+        "Using this data, generate a LARGE volume of recommendations to create an endless feed experience.\n"
+        "- Generate at least 10-15 distinct categories for 'movies'.\n"
+        "- Generate at least 10-15 distinct categories for 'tv'.\n"
+        "- Generate at least 5-8 distinct categories for 'documentaries'.\n"
+        "- Each category should contain 5-10 items.\n"
+        "Be specific and niche with your categories (e.g., 'Cyberpunk Thrillers', 'Slow-Burn Sci-Fi', '80s Action Classics'). "
         "Remember: respond only with JSON and no extra commentary."
     )
 
