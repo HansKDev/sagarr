@@ -21,13 +21,13 @@ This guide will help you set up and run Sagarr, the AI-powered media recommendat
 2.  **Configuration**
     Create a `.env` file in the `backend` directory (or rely on the Admin UI later).
     
-    Example `backend/.env`:
+    Example `backend/.env` (for local dev using Vite on 5173; when using Docker, this is overridden by `FRONTEND_URL` in `docker-compose.yml`):
     ```ini
     # Security
     SECRET_KEY=your_super_secret_key_here
     
-    # URLs (for Docker, use internal hostnames if on same network, or host IP)
-    FRONTEND_URL=http://localhost:5173
+    # URLs (for Docker, use the externally reachable frontend URL)
+    FRONTEND_URL=http://localhost:8090
     
     # Optional Pre-configuration (can also be set in UI)
     TAUTULLI_URL=http://192.168.1.100:8181
@@ -45,7 +45,7 @@ This guide will help you set up and run Sagarr, the AI-powered media recommendat
     ```
 
 4.  **Access the Application**
-    Open your browser and navigate to `http://localhost:5173`.
+    Open your browser and navigate to `http://localhost:8090`.
 
 ## First Run
 
