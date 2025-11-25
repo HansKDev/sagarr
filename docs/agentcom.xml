@@ -841,4 +841,34 @@
             - After saving Overseerr config in the Admin UI and restarting the backend, \"Test Overseerr\" should now return a meaningful status based on Overseerr's response for TMDb id 550, rather than always reporting UNKNOWN due to stale configuration.
         </message>
     </session>
+    <session id="36">
+        <timestamp>2025-11-25T14:35:00+01:00</timestamp>
+        <agent>GPT-5.1</agent>
+        <status>In Progress</status>
+        <message>
+            Added a configurable TMDb section to the Admin Settings page and wired it into the backend.
+
+            Backend:
+            - backend/app/routers/admin.py:
+              - Extended SettingsUpdate with TMDB_API_KEY.
+              - get_settings() now returns a masked TMDB_API_KEY field (\"***\" when present).
+              - update_settings() updates settings.TMDB_API_KEY when a non-masked value is posted.
+              - This flows through to services/metadata.fetch_tmdb_details() via settings.tmdb_api_key, so the Admin \"Test TMDb\" endpoint reflects whatever key the admin configures.
+
+            Frontend:
+            - frontend/src/components/AdminSettings.jsx:
+              - Extended the local settings state with TMDB_API_KEY to round-trip with /api/admin/settings.
+              - Replaced the static TMDb note with:
+                - A password field for \"TMDb API Key\".
+                - A \"Save TMDb\" button that calls saveSettings('TMDb').
+                - The existing \"Test TMDb\" button, which still calls /api/admin/test/tmdb and shows the response message.
+
+            Docs:
+            - docs/todo.md (Task 5.1: Admin Settings Page):
+              - Updated description so TMDb is included alongside Tautulli, Overseerr, and AI for configurable API keys and per-section Save/Test controls.
+
+            Coordination:
+            - No behavior changes to the recommendation or metadata APIs; only the source of TMDB_API_KEY is now configurable at runtime via the admin UI instead of being env-only.
+        </message>
+    </session>
 </agentcom>

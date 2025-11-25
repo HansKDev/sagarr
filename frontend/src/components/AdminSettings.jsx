@@ -10,7 +10,8 @@ function AdminSettings() {
         OVERSEERR_API_KEY: '',
         AI_PROVIDER: 'openai',
         AI_API_KEY: '',
-        AI_MODEL: ''
+        AI_MODEL: '',
+        TMDB_API_KEY: ''
     })
     const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(false)
@@ -265,11 +266,29 @@ function AdminSettings() {
 
                 <section>
                     <h3>TMDb Configuration</h3>
-                    <p style={{ fontSize: '0.85rem', color: '#cbd5f5' }}>
-                        TMDb is used for fetching posters and titles for recommended items. The API key is currently read from
-                        the backend environment (TMDB_API_KEY).
-                    </p>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                        <p style={{ fontSize: '0.85rem', color: '#cbd5f5' }}>
+                            TMDb is used for fetching posters and titles for recommended items.
+                        </p>
+                        <label>API Key</label>
+                        <input
+                            type="password"
+                            name="TMDB_API_KEY"
+                            value={settings.TMDB_API_KEY}
+                            onChange={handleChange}
+                            placeholder="TMDb API Key"
+                            style={{ padding: '0.5rem', background: '#222', border: '1px solid #444', color: 'white' }}
+                        />
+                    </div>
                     <div style={{ marginTop: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <button
+                            type="button"
+                            onClick={() => saveSettings('TMDb')}
+                            disabled={saving}
+                            style={{ padding: '0.4rem 0.8rem', fontSize: '0.9rem', borderRadius: '4px', border: 'none', background: '#e5a00d', color: 'black', cursor: 'pointer' }}
+                        >
+                            {saving ? 'Saving...' : 'Save TMDb'}
+                        </button>
                         <button
                             type="button"
                             onClick={() => runTest('tmdb')}

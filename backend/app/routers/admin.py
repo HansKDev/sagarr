@@ -26,6 +26,7 @@ class SettingsUpdate(BaseModel):
     AI_PROVIDER: str
     AI_API_KEY: str
     AI_MODEL: str
+     TMDB_API_KEY: str
 
 
 def _ensure_admin(user: User) -> None:
@@ -52,6 +53,7 @@ async def get_settings(
         "AI_PROVIDER": settings.AI_PROVIDER,
         "AI_API_KEY": "***" if settings.AI_API_KEY else "",
         "AI_MODEL": settings.AI_MODEL,
+        "TMDB_API_KEY": "***" if settings.TMDB_API_KEY else "",
     }
 
 
@@ -80,6 +82,8 @@ async def update_settings(
         settings.AI_API_KEY = new_settings.AI_API_KEY
     if new_settings.AI_MODEL:
         settings.AI_MODEL = new_settings.AI_MODEL
+    if new_settings.TMDB_API_KEY and "***" not in new_settings.TMDB_API_KEY:
+        settings.TMDB_API_KEY = new_settings.TMDB_API_KEY
 
     return {"status": "updated"}
 
