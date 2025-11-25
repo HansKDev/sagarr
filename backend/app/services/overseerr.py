@@ -5,25 +5,30 @@ from ..config import settings
 
 class OverseerrService:
     def __init__(self) -> None:
-        self.base_url = settings.OVERSEERR_URL.rstrip("/")
-        self.api_key = settings.OVERSEERR_API_KEY
-        self.headers = {
-            "X-Api-Key": self.api_key,
-            "Accept": "application/json",
-        }
+        # Intentionally avoid caching URL/API key here; they can be updated
+        # at runtime via the admin settings, so we always read from settings.
+        pass
 
     async def check_availability(self, tmdb_id: int, media_type: str):
         """
         Check if media is available or requested.
         Returns: { "status": "AVAILABLE" | "PARTIALLY_AVAILABLE" | "PROCESSING" | "PENDING" | "UNKNOWN", "plexUrl": ... }
         """
-        if not self.base_url or not self.api_key:
+        base_url = settings.OVERSEERR_URL.rstrip("/")
+        api_key = settings.OVERSEERR_API_KEY
+
+        if not base_url or not api_key:
             return {"status": "UNKNOWN"}
+
+        headers = {
+            "X-Api-Key": api_key,
+            "Accept": "application/json",
+        }
 
         async with httpx.AsyncClient() as client:
             try:
-                url = f"{self.base_url}/api/v1/{media_type}/{tmdb_id}"
-                resp = await client.get(url, headers=self.headers)
+                url = f"{base_url}/api/v1/{media_type}/{tmdb_id}"
+                resp = await client.get(url, headers=headers)
                 resp.raise_for_status()
                 data = resp.json()
 
@@ -56,8 +61,16 @@ class OverseerrService:
         """
         Request media via Overseerr.
         """
-        if not self.base_url or not self.api_key:
+        base_url = settings.OVERSEERR_URL.rstrip("/")
+        api_key = settings.OVERSEERR_API_KEY
+
+        if not base_url or not api_key:
             return False
+
+        headers = {
+            "X-Api-Key": api_key,
+            "Accept": "application/json",
+        }
 
         payload = {
             "mediaId": tmdb_id,
@@ -67,8 +80,8 @@ class OverseerrService:
 
         async with httpx.AsyncClient() as client:
             try:
-                url = f"{self.base_url}/api/v1/request"
-                resp = await client.post(url, headers=self.headers, json=payload)
+                url = f"{base_url}/api/v1/request"
+                resp = await client.post(url, headers=headers, json=payload)
                 resp.raise_for_status()
                 return True
             except Exception as e:

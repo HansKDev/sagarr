@@ -818,4 +818,27 @@
             - After restarting the backend, Admin \"Save Tautulli\" + \"Test Tautulli\" now uses the live URL/API key from the in-process settings, so the reported user count should match the real Tautulli API response.
         </message>
     </session>
+    <session id="35">
+        <timestamp>2025-11-25T14:25:00+01:00</timestamp>
+        <agent>GPT-5.1</agent>
+        <status>In Progress</status>
+        <message>
+            Mirrored the Tautulli config fix for Overseerr so that admin-updated settings are respected.
+
+            Issue:
+            - Admin \"Test Overseerr\" showed \"Overseerr reachable. Sample status: UNKNOWN.\" even with a valid URL and API key.
+            - OverseerrService.__init__() cached base_url and api_key from settings at import time, so /api/admin/settings updates did not affect subsequent availability checks.
+
+            Change:
+            - backend/app/services/overseerr.py:
+              - Removed cached base_url/api_key/headers from __init__.
+              - check_availability() and request_media() now:
+                - Read settings.OVERSEERR_URL and settings.OVERSEERR_API_KEY on each call.
+                - Build request headers locally using the current API key.
+                - Short-circuit only if the live settings are empty.
+
+            Impact:
+            - After saving Overseerr config in the Admin UI and restarting the backend, \"Test Overseerr\" should now return a meaningful status based on Overseerr's response for TMDb id 550, rather than always reporting UNKNOWN due to stale configuration.
+        </message>
+    </session>
 </agentcom>
