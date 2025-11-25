@@ -472,4 +472,84 @@
             - If we decide to pursue Phase 6 soon, we can start with Task 6.1 (Traefik labels and proxy networking) and Task 6.2 (SECRET_KEY enforcement and env docs), which are the minimum to behave well in a Saltbox deployment.
         </message>
     </session>
+    <session id="23">
+        <timestamp>2025-11-25T11:46:46+01:00</timestamp>
+        <agent>GPT-5.1</agent>
+        <status>In Progress</status>
+        <message>
+            Adjusted Docker networking so Sagarr runs on the same default bridge network as other services (e.g., pbs), per request.
+
+            Changes:
+            - docker-compose.yml:
+              - Removed the obsolete top-level 'version' line.
+              - Set network_mode: bridge for both backend and frontend services, so they now attach to the global 'bridge' network instead of the compose-specific 'sagarr_default' network.
+              - Left port mappings intact (backend 8000, frontend 8090) and kept the data volume configuration unchanged.
+            - frontend/nginx.conf:
+              - Updated the /api proxy upstream from 'backend:8000' to 'sagarr-backend:8000', matching the backend container_name on the default bridge network (where container names act as DNS names).
+
+            Rationale:
+            - This brings Sagarr onto the same network mode as the pbs container (bridge), which should align its behavior with other existing services on the host and may help work around the odd host-side HTTP reset we observed.
+            - Backend and frontend still communicate internally via nginx proxying /api to the backend container.
+
+            Next:
+            - docker compose down && docker compose up -d --build to apply the new networking.
+            - Retest access from the host via:
+              - curl http://localhost:8000/api/health
+              - curl http://localhost:8090/
+        </message>
+    </session>
+    <session id="24">
+        <timestamp>2025-11-25T11:50:51+01:00</timestamp>
+        <agent>GPT-5.1</agent>
+        <status>In Progress</status>
+        <message>
+            Fixed 404 on /api/auth/login when called via the frontend (nginx) and the resulting "Failed to initiate login" message in the UI.
+
+            Root cause:
+            - The frontend Docker image was still using the default nginx configuration from nginx:alpine.
+            - frontend/Dockerfile had the COPY nginx.conf line commented out, so /etc/nginx/conf.d/default.conf inside the container did not include a /api proxy block.
+            - As a result, requests to http://localhost:8090/api/auth/login were handled by nginx's default server and returned a 404, while direct calls to http://localhost:8000/api/auth/login (bypassing nginx) worked.
+
+            Change:
+            - frontend/Dockerfile:
+              - Uncommented and enabled:
+                COPY nginx.conf /etc/nginx/conf.d/default.conf
+              - This ensures the custom nginx.conf from the repo is baked into the image and the /api location proxies to sagarr-backend:8000.
+
+            Next:
+            - Rebuild and restart:
+              - docker compose up -d --build
+            - Verify from host:
+              - curl http://localhost:8090/api/auth/login now returns the JSON with auth_url and pin_id instead of 404.
+            - With this in place, the Login button in the UI should successfully initiate the Plex sign-in flow instead of showing "Failed to initiate login".
+        </message>
+    </session>
+    <session id="25">
+        <timestamp>2025-11-25T11:54:10+01:00</timestamp>
+        <agent>GPT-5.1</agent>
+        <status>In Progress</status>
+        <message>
+            Refined Docker networking and nginx proxying to balance host connectivity and container-to-container access.
+
+            Context:
+            - With the default compose network (sagarr_default), containers could resolve each other by name and /api calls worked inside Docker, but the host occasionally saw HTTP connection resets on ports 8000/8090.
+            - With network_mode: bridge, host HTTP to 8000/8090 behaved correctly, but nginx inside the frontend container could not resolve the backend by container name.
+
+            Changes:
+            - docker-compose.yml:
+              - Re-enabled network_mode: bridge for both backend and frontend services so they join the same default bridge network as other containers (e.g., pbs), preserving the improved host connectivity we observed.
+            - frontend/nginx.conf:
+              - Updated the /api upstream from 'sagarr-backend' to '172.17.0.1:8000', which is the host's docker0 address on this machine. Since the backend publishes port 8000 to the host, nginx can now reach the backend via the host bridge IP, avoiding the need for container-name DNS on the default bridge.
+
+            Rationale:
+            - This keeps the docker-compose port publishing model (host:8000/8090) that works well with the existing iptables rules, while giving the frontend a stable way to reach the backend from inside its container.
+
+            Next:
+            - docker compose down && docker compose up -d --build
+            - Verify from host:
+              - curl http://localhost:8000/api/health (backend)
+              - curl http://localhost:8090/api/auth/login (via nginx -> backend)
+            - Then retry the Plex login flow in the browser to ensure the "Failed to initiate login" error is gone.
+        </message>
+    </session>
 </agentcom>

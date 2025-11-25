@@ -1,9 +1,8 @@
-version: '3.8'
-
 services:
   backend:
     build: ./backend
     container_name: sagarr-backend
+    network_mode: bridge
     volumes:
       - ./backend:/app
       - sagarr-data:/app/data
@@ -17,6 +16,7 @@ services:
   frontend:
     build: ./frontend
     container_name: sagarr-frontend
+    network_mode: bridge
     ports:
       - "8090:80"
     depends_on:
