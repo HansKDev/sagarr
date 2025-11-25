@@ -18,3 +18,6 @@ dist/
 # IDE
 .vscode/
 .idea/
+
+# Internal agent communication log (never publish)
+docs/agentcom.xml
