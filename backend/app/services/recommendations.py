@@ -65,7 +65,15 @@ async def generate_recommendations(db: Session, user_id: int) -> RecommendationC
             if len(documentaries) >= 10:
                 break
 
-    # Fetch dislikes from UserPreference
+    # Fetch explicit likes and dislikes from UserPreference
+    likes_stmt = (
+        select(UserPreference)
+        .where(UserPreference.user_id == user_id)
+        .where(UserPreference.rating == 1)
+    )
+    likes_rows = db.execute(likes_stmt).scalars().all()
+    likes = [{"tmdb_id": row.tmdb_id, "media_type": row.media_type} for row in likes_rows]
+
     dislikes_stmt = (
         select(UserPreference)
         .where(UserPreference.user_id == user_id)
@@ -87,12 +95,13 @@ async def generate_recommendations(db: Session, user_id: int) -> RecommendationC
         "documentaries": {
             "sample": documentaries,
         },
+        "likes": likes,
         "dislikes": dislikes,
     }
 
     system_prompt = (
         "You are an AI that creates creative, descriptive recommendation categories "
-        "for a single user based on their Plex/Tautulli watch history and explicit dislikes. "
+        "for a single user based on their Plex/Tautulli watch history and explicit likes/dislikes. "
         "You must generate recommendations for Movies, TV Series, AND Documentaries. "
         "Respond ONLY with valid JSON in the following shape: "
         '{"movies": [{"title": "...", "reason": "...", "items": [123]}], '
