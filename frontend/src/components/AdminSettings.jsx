@@ -2,6 +2,37 @@ import { useState, useEffect } from 'react'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
 
+const PROVIDER_INFO = {
+    openai: {
+        label: 'OpenAI',
+        url: 'https://platform.openai.com/',
+    },
+    anthropic: {
+        label: 'Anthropic Claude',
+        url: 'https://console.anthropic.com/',
+    },
+    gemini: {
+        label: 'Google Gemini',
+        url: 'https://ai.google.dev/',
+    },
+    generic: {
+        label: 'Generic / OpenAI-compatible',
+        url: 'https://platform.openai.com/docs/api-reference/introduction',
+    },
+    openrouter: {
+        label: 'OpenRouter',
+        url: 'https://openrouter.ai/',
+    },
+    mistral: {
+        label: 'Mistral AI',
+        url: 'https://docs.mistral.ai/',
+    },
+    groq: {
+        label: 'Groq',
+        url: 'https://console.groq.com/',
+    },
+}
+
 function AdminSettings() {
     const [settings, setSettings] = useState({
         TAUTULLI_URL: '',
@@ -221,8 +252,26 @@ function AdminSettings() {
                             style={{ padding: '0.5rem', background: '#222', border: '1px solid #444', color: 'white' }}
                         >
                             <option value="openai">OpenAI</option>
-                            <option value="generic">Generic / Ollama</option>
+                            <option value="anthropic">Anthropic Claude</option>
+                            <option value="gemini">Google Gemini</option>
+                            <option value="openrouter">OpenRouter (multi-provider)</option>
+                            <option value="mistral">Mistral AI</option>
+                            <option value="groq">Groq</option>
+                            <option value="generic">Generic / OpenAI-compatible</option>
                         </select>
+                        {PROVIDER_INFO[settings.AI_PROVIDER] && (
+                            <span style={{ fontSize: '0.8rem', color: '#a0aec0' }}>
+                                {PROVIDER_INFO[settings.AI_PROVIDER].label}{' '}
+                                <a
+                                    href={PROVIDER_INFO[settings.AI_PROVIDER].url}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    style={{ color: '#63b3ed', textDecoration: 'underline' }}
+                                >
+                                    Website
+                                </a>
+                            </span>
+                        )}
 
                         <label>API Key</label>
                         <input
@@ -284,8 +333,26 @@ function AdminSettings() {
                         >
                             <option value="">Disabled</option>
                             <option value="openai">OpenAI</option>
-                            <option value="generic">Generic / Ollama</option>
+                            <option value="anthropic">Anthropic Claude</option>
+                            <option value="gemini">Google Gemini</option>
+                            <option value="openrouter">OpenRouter (multi-provider)</option>
+                            <option value="mistral">Mistral AI</option>
+                            <option value="groq">Groq</option>
+                            <option value="generic">Generic / OpenAI-compatible</option>
                         </select>
+                        {settings.AI_FALLBACK_PROVIDER && PROVIDER_INFO[settings.AI_FALLBACK_PROVIDER] && (
+                            <span style={{ fontSize: '0.8rem', color: '#a0aec0' }}>
+                                {PROVIDER_INFO[settings.AI_FALLBACK_PROVIDER].label}{' '}
+                                <a
+                                    href={PROVIDER_INFO[settings.AI_FALLBACK_PROVIDER].url}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    style={{ color: '#63b3ed', textDecoration: 'underline' }}
+                                >
+                                    Website
+                                </a>
+                            </span>
+                        )}
 
                         <label>Fallback API Key</label>
                         <input

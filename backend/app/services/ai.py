@@ -64,6 +64,98 @@ class GenericProvider(AIProvider):
             return data["choices"][0]["message"]["content"]
 
 
+class AnthropicProvider(AIProvider):
+    """
+    Direct integration with Anthropic Claude (messages API).
+    """
+
+    def __init__(self, api_key: Optional[str] = None, model: Optional[str] = None):
+        self.api_key = api_key or settings.AI_API_KEY
+        self.model = model or settings.AI_MODEL
+
+    async def generate(self, prompt: str, system_prompt: str = None) -> str:
+        # Combine system + user into a single user message; Claude encourages
+        # system prompts but we can inline for simplicity.
+        combined = prompt
+        if system_prompt:
+            combined = f"{system_prompt}\n\n{prompt}"
+
+        url = "https://api.anthropic.com/v1/messages"
+        headers = {
+            "x-api-key": self.api_key,
+            "anthropic-version": "2023-06-01",
+            "content-type": "application/json",
+        }
+        payload = {
+            "model": self.model,
+            "max_tokens": 1024,
+            "messages": [
+                {
+                    "role": "user",
+                    "content": [{"type": "text", "text": combined}],
+                }
+            ],
+        }
+
+        async with httpx.AsyncClient() as client:
+            resp = await client.post(url, headers=headers, json=payload, timeout=60.0)
+            resp.raise_for_status()
+            data = resp.json()
+            content = data.get("content") or []
+            if content and isinstance(content, list):
+                first = content[0]
+                if isinstance(first, dict):
+                    # Claude returns segments with type/text.
+                    text = first.get("text")
+                    if text:
+                        return text
+            return "{}"
+
+
+class GeminiProvider(AIProvider):
+    """
+    Direct integration with Google Gemini via the REST API.
+    """
+
+    def __init__(self, api_key: Optional[str] = None, model: Optional[str] = None):
+        self.api_key = api_key or settings.AI_API_KEY
+        # Default to a capable JSON-friendly model name if none is set.
+        self.model = model or settings.AI_MODEL or "gemini-1.5-flash"
+
+    async def generate(self, prompt: str, system_prompt: str = None) -> str:
+        combined = prompt
+        if system_prompt:
+            combined = f"{system_prompt}\n\n{prompt}"
+
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{self.model}:generateContent"
+        params = {"key": self.api_key}
+        payload = {
+            "contents": [
+                {
+                    "parts": [
+                        {
+                            "text": combined,
+                        }
+                    ]
+                }
+            ]
+        }
+
+        async with httpx.AsyncClient() as client:
+            resp = await client.post(url, params=params, json=payload, timeout=60.0)
+            resp.raise_for_status()
+            data = resp.json()
+            candidates = data.get("candidates") or []
+            if candidates and isinstance(candidates, list):
+                content = candidates[0].get("content") or {}
+                parts = content.get("parts") or []
+                if parts and isinstance(parts, list):
+                    text = parts[0].get("text")
+                    if text:
+                        return text
+            return "{}"
+
+
 class ChainedProvider(AIProvider):
     """
     Tries multiple underlying providers in order until one succeeds.
@@ -93,11 +185,20 @@ class ChainedProvider(AIProvider):
 def _build_provider(kind: str, api_key: str, model: str) -> Optional[AIProvider]:
     if not kind:
         return None
+    kind = kind.lower()
     if kind == "openai":
         if not api_key:
             return None
         return OpenAIProvider(api_key=api_key, model=model)
-    if kind == "generic":
+    if kind == "anthropic" or kind == "claude":
+        if not api_key:
+            return None
+        return AnthropicProvider(api_key=api_key, model=model)
+    if kind == "gemini":
+        if not api_key:
+            return None
+        return GeminiProvider(api_key=api_key, model=model)
+    if kind in {"generic", "openrouter", "mistral", "groq"}:
         if not settings.AI_BASE_URL:
             return None
         return GenericProvider(base_url=settings.AI_BASE_URL, api_key=api_key, model=model)
