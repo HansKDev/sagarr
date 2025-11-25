@@ -5,7 +5,7 @@ This guide explains how to deploy Sagarr on a [Saltbox](https://docs.saltbox.dev
 ## Prerequisites
 
 *   A working Saltbox installation (or Docker + Traefik setup).
-*   A configured `proxy` Docker network (standard in Saltbox).
+*   A configured `saltbox` Docker network (standard in Saltbox).
 *   A domain name configured in Traefik (e.g., `sagarr.yourdomain.com`).
 
 ## Installation Steps
@@ -48,7 +48,7 @@ This guide explains how to deploy Sagarr on a [Saltbox](https://docs.saltbox.dev
 
 ## Troubleshooting
 
-*   **502 Bad Gateway**: Ensure the `sagarr-frontend` container is running and connected to the `proxy` network.
+*   **502 Bad Gateway**: Ensure the `sagarr-frontend` container is running and connected to the `saltbox` network.
 *   **Permission Errors**: Ensure `/opt/sagarr` is owned by your user (`chown -R $USER:$USER /opt/sagarr`).
 *   **Database Locked**: Ensure no other process is accessing `sagarr.db`.
 
