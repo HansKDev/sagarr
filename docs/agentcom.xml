@@ -943,4 +943,58 @@
             - If mapping still fails for an edge case, the frontend will see a 400 with a clear message rather than a silent server error, making diagnostics easier.
         </message>
     </session>
+    <session id="40">
+        <timestamp>2025-11-25T15:10:00+01:00</timestamp>
+        <agent>Antigravity</agent>
+        <status>In Progress</status>
+        <message>
+            Redesigned buttons to match the "Neural Compass" brand palette (Cyan/Purple).
+
+            Actions:
+            - Updated `frontend/src/index.css` to include `.btn`, `.btn-primary` (gradient), `.btn-secondary` (outline), and `.btn-ghost` classes.
+            - Refactored `frontend/src/components/AdminSettings.jsx` to use these classes for "Save" (Primary) and "Test" (Secondary) buttons, removing inline styles.
+            - Refactored `frontend/src/components/MediaCard.jsx` to use `.btn-primary` for "Request" and `.btn-secondary` for "Seen it" and rating actions.
+            - Refactored `frontend/src/components/Login.jsx` to use `.btn-primary` for the login button.
+
+            Impact:
+            - The application now has a consistent, professional look with buttons that align with the brand identity.
+            - "Save" buttons feature a vibrant cyan-to-purple gradient.
+            - "Test" buttons use a clean cyan outline.
+        </message>
+    </session>
+    <session id="41">
+        <timestamp>2025-11-25T15:20:00+01:00</timestamp>
+        <agent>GPT-5.1</agent>
+        <status>In Progress</status>
+        <message>
+            Implemented configurable AI fallback chaining so Sagarr can use cheaper/free AI options when possible and fall back gracefully when a provider fails (e.g., OpenAI quota).
+
+            Backend:
+            - backend/app/config.py:
+              - Added AI_FALLBACK_PROVIDER, AI_FALLBACK_API_KEY, AI_FALLBACK_MODEL settings.
+            - backend/app/services/ai.py:
+              - Refactored OpenAIProvider and GenericProvider to accept explicit api_key/model/base_url parameters while still defaulting to the core settings when not provided.
+              - Introduced ChainedProvider, which tries a list of providers in order and returns the first non-empty response, logging and moving on when one raises an exception.
+              - Added _build_provider(kind, api_key, model) to construct OpenAI or Generic providers from dynamic settings.
+              - Updated get_ai_provider() so:
+                - Primary provider is built from AI_PROVIDER/AI_API_KEY/AI_MODEL.
+                - Optional fallback provider is built from AI_FALLBACK_* (falling back to primary key/model when blank).
+                - If both are configured, get_ai_provider() returns a ChainedProvider(primary, fallback); otherwise it behaves as before.
+            - backend/app/routers/admin.py:
+              - Extended SettingsUpdate with AI_FALLBACK_PROVIDER, AI_FALLBACK_API_KEY, and AI_FALLBACK_MODEL.
+              - get_settings() now exposes those fields (masking the fallback API key).
+              - update_settings() writes them to the in-memory settings object and persists them using AppSetting so they survive restarts.
+
+            Frontend:
+            - frontend/src/components/AdminSettings.jsx:
+              - Extended local settings state to include AI_FALLBACK_PROVIDER/API_KEY/MODEL.
+              - Added an "AI Fallback Configuration" section with:
+                - A dropdown (Disabled/OpenAI/Generic).
+                - Optional fallback API key and model fields (defaulting to primary when left blank).
+                - A "Save AI Fallback" button wired to /api/admin/settings.
+
+            Docs:
+            - docs/todo.md (Task 5.1) updated to mention hybrid configuration with an optional fallback AI provider/model, satisfying the PRD's "Hybrid AI Configuration" requirement.
+        </message>
+    </session>
 </agentcom>

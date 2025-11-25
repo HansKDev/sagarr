@@ -27,6 +27,9 @@ class SettingsUpdate(BaseModel):
     AI_API_KEY: str
     AI_MODEL: str
     TMDB_API_KEY: str
+    AI_FALLBACK_PROVIDER: str
+    AI_FALLBACK_API_KEY: str
+    AI_FALLBACK_MODEL: str
 
 
 def _ensure_admin(user: User) -> None:
@@ -66,6 +69,9 @@ async def get_settings(
         "AI_API_KEY": "***" if settings.AI_API_KEY else "",
         "AI_MODEL": settings.AI_MODEL,
         "TMDB_API_KEY": "***" if settings.TMDB_API_KEY else "",
+        "AI_FALLBACK_PROVIDER": settings.AI_FALLBACK_PROVIDER,
+        "AI_FALLBACK_API_KEY": "***" if settings.AI_FALLBACK_API_KEY else "",
+        "AI_FALLBACK_MODEL": settings.AI_FALLBACK_MODEL,
     }
 
 
@@ -104,6 +110,16 @@ async def update_settings(
     if new_settings.TMDB_API_KEY and "***" not in new_settings.TMDB_API_KEY:
         settings.TMDB_API_KEY = new_settings.TMDB_API_KEY
         _save_setting(db, "TMDB_API_KEY", new_settings.TMDB_API_KEY)
+
+    if new_settings.AI_FALLBACK_PROVIDER:
+        settings.AI_FALLBACK_PROVIDER = new_settings.AI_FALLBACK_PROVIDER
+        _save_setting(db, "AI_FALLBACK_PROVIDER", new_settings.AI_FALLBACK_PROVIDER)
+    if new_settings.AI_FALLBACK_API_KEY and "***" not in new_settings.AI_FALLBACK_API_KEY:
+        settings.AI_FALLBACK_API_KEY = new_settings.AI_FALLBACK_API_KEY
+        _save_setting(db, "AI_FALLBACK_API_KEY", new_settings.AI_FALLBACK_API_KEY)
+    if new_settings.AI_FALLBACK_MODEL:
+        settings.AI_FALLBACK_MODEL = new_settings.AI_FALLBACK_MODEL
+        _save_setting(db, "AI_FALLBACK_MODEL", new_settings.AI_FALLBACK_MODEL)
 
     db.commit()
     return {"status": "updated"}

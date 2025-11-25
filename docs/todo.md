@@ -125,7 +125,7 @@ This document outlines the step-by-step plan to build Sagarr, an AI-powered medi
 
 - [x] **Task 5.1: Admin Settings Page**
     - Create a frontend page for Admins only.
-    - Allow configuration of API Keys (Tautulli, Overseerr, AI, TMDb) and Model selection via UI.
+    - Allow configuration of API Keys (Tautulli, Overseerr, AI, TMDb) and Model selection via UI, including an optional fallback AI provider/model to minimize cost by preferring cheaper/free options first.
     - Add backend "config check" endpoints:
         - `GET /api/admin/test/tautulli` -> verifies URL/API key reachability and basic auth.
         - `GET /api/admin/test/overseerr` -> verifies URL/API key and a simple availability call.

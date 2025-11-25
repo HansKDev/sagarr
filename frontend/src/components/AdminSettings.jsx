@@ -11,7 +11,10 @@ function AdminSettings() {
         AI_PROVIDER: 'openai',
         AI_API_KEY: '',
         AI_MODEL: '',
-        TMDB_API_KEY: ''
+        TMDB_API_KEY: '',
+        AI_FALLBACK_PROVIDER: '',
+        AI_FALLBACK_API_KEY: '',
+        AI_FALLBACK_MODEL: ''
     })
     const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(false)
@@ -108,7 +111,7 @@ function AdminSettings() {
         <div style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
                 <h2>Admin Settings</h2>
-                <button onClick={() => navigate('/')} style={{ background: 'transparent', border: '1px solid #666', color: 'white', padding: '0.5rem 1rem', cursor: 'pointer' }}>
+                <button onClick={() => navigate('/')} className="btn btn-ghost">
                     Back to Dashboard
                 </button>
             </div>
@@ -144,7 +147,7 @@ function AdminSettings() {
                             type="button"
                             onClick={() => saveSettings('Tautulli')}
                             disabled={saving}
-                            style={{ padding: '0.4rem 0.8rem', fontSize: '0.9rem', borderRadius: '4px', border: 'none', background: '#e5a00d', color: 'black', cursor: 'pointer' }}
+                            className="btn btn-primary"
                         >
                             {saving ? 'Saving...' : 'Save Tautulli'}
                         </button>
@@ -152,7 +155,7 @@ function AdminSettings() {
                             type="button"
                             onClick={() => runTest('tautulli')}
                             disabled={testing.tautulli}
-                            style={{ padding: '0.4rem 0.8rem', fontSize: '0.9rem', borderRadius: '4px', border: '1px solid #888', background: '#111', color: 'white', cursor: 'pointer' }}
+                            className="btn btn-secondary"
                         >
                             {testing.tautulli ? 'Testing...' : 'Test Tautulli'}
                         </button>
@@ -189,7 +192,7 @@ function AdminSettings() {
                             type="button"
                             onClick={() => saveSettings('Overseerr')}
                             disabled={saving}
-                            style={{ padding: '0.4rem 0.8rem', fontSize: '0.9rem', borderRadius: '4px', border: 'none', background: '#e5a00d', color: 'black', cursor: 'pointer' }}
+                            className="btn btn-primary"
                         >
                             {saving ? 'Saving...' : 'Save Overseerr'}
                         </button>
@@ -197,7 +200,7 @@ function AdminSettings() {
                             type="button"
                             onClick={() => runTest('overseerr')}
                             disabled={testing.overseerr}
-                            style={{ padding: '0.4rem 0.8rem', fontSize: '0.9rem', borderRadius: '4px', border: '1px solid #888', background: '#111', color: 'white', cursor: 'pointer' }}
+                            className="btn btn-secondary"
                         >
                             {testing.overseerr ? 'Testing...' : 'Test Overseerr'}
                         </button>
@@ -246,7 +249,7 @@ function AdminSettings() {
                             type="button"
                             onClick={() => saveSettings('AI')}
                             disabled={saving}
-                            style={{ padding: '0.4rem 0.8rem', fontSize: '0.9rem', borderRadius: '4px', border: 'none', background: '#e5a00d', color: 'black', cursor: 'pointer' }}
+                            className="btn btn-primary"
                         >
                             {saving ? 'Saving...' : 'Save AI'}
                         </button>
@@ -254,13 +257,65 @@ function AdminSettings() {
                             type="button"
                             onClick={() => runTest('ai')}
                             disabled={testing.ai}
-                            style={{ padding: '0.4rem 0.8rem', fontSize: '0.9rem', borderRadius: '4px', border: '1px solid #888', background: '#111', color: 'white', cursor: 'pointer' }}
+                            className="btn btn-secondary"
                         >
                             {testing.ai ? 'Testing...' : 'Test AI'}
                         </button>
                         {testMessages.ai && (
                             <span style={{ fontSize: '0.85rem', color: '#e5e5e5' }}>{testMessages.ai}</span>
                         )}
+                    </div>
+                </section>
+
+                <section>
+                    <h3>AI Fallback Configuration</h3>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                        <p style={{ fontSize: '0.85rem', color: '#cbd5f5' }}>
+                            Optional secondary provider used when the primary AI fails (for example due to quota limits).
+                            Configure this with a cheaper or free endpoint if available.
+                        </p>
+
+                        <label>Fallback Provider</label>
+                        <select
+                            name="AI_FALLBACK_PROVIDER"
+                            value={settings.AI_FALLBACK_PROVIDER}
+                            onChange={handleChange}
+                            style={{ padding: '0.5rem', background: '#222', border: '1px solid #444', color: 'white' }}
+                        >
+                            <option value="">Disabled</option>
+                            <option value="openai">OpenAI</option>
+                            <option value="generic">Generic / Ollama</option>
+                        </select>
+
+                        <label>Fallback API Key</label>
+                        <input
+                            type="password"
+                            name="AI_FALLBACK_API_KEY"
+                            value={settings.AI_FALLBACK_API_KEY}
+                            onChange={handleChange}
+                            placeholder="Optional (defaults to primary AI key)"
+                            style={{ padding: '0.5rem', background: '#222', border: '1px solid #444', color: 'white' }}
+                        />
+
+                        <label>Fallback Model Name</label>
+                        <input
+                            type="text"
+                            name="AI_FALLBACK_MODEL"
+                            value={settings.AI_FALLBACK_MODEL}
+                            onChange={handleChange}
+                            placeholder="Optional (defaults to primary model)"
+                            style={{ padding: '0.5rem', background: '#222', border: '1px solid #444', color: 'white' }}
+                        />
+                    </div>
+                    <div style={{ marginTop: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                        <button
+                            type="button"
+                            onClick={() => saveSettings('AI Fallback')}
+                            disabled={saving}
+                            style={{ padding: '0.4rem 0.8rem', fontSize: '0.9rem', borderRadius: '4px', border: 'none', background: '#e5a00d', color: 'black', cursor: 'pointer' }}
+                        >
+                            {saving ? 'Saving...' : 'Save AI Fallback'}
+                        </button>
                     </div>
                 </section>
 
@@ -285,7 +340,7 @@ function AdminSettings() {
                             type="button"
                             onClick={() => saveSettings('TMDb')}
                             disabled={saving}
-                            style={{ padding: '0.4rem 0.8rem', fontSize: '0.9rem', borderRadius: '4px', border: 'none', background: '#e5a00d', color: 'black', cursor: 'pointer' }}
+                            className="btn btn-primary"
                         >
                             {saving ? 'Saving...' : 'Save TMDb'}
                         </button>
@@ -293,7 +348,7 @@ function AdminSettings() {
                             type="button"
                             onClick={() => runTest('tmdb')}
                             disabled={testing.tmdb}
-                            style={{ padding: '0.4rem 0.8rem', fontSize: '0.9rem', borderRadius: '4px', border: '1px solid #888', background: '#111', color: 'white', cursor: 'pointer' }}
+                            className="btn btn-secondary"
                         >
                             {testing.tmdb ? 'Testing...' : 'Test TMDb'}
                         </button>
@@ -306,16 +361,8 @@ function AdminSettings() {
                 <button
                     type="submit"
                     disabled={saving}
-                    style={{
-                        padding: '1rem',
-                        fontSize: '1.1rem',
-                        backgroundColor: '#e5a00d',
-                        color: 'black',
-                        border: 'none',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                        marginTop: '1rem'
-                    }}
+                    className="btn btn-primary btn-block"
+                    style={{ marginTop: '1rem', fontSize: '1.1rem', padding: '1rem' }}
                 >
                     {saving ? 'Saving...' : 'Save Settings'}
                 </button>

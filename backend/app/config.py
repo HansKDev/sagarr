@@ -33,6 +33,9 @@ class Settings(BaseSettings):
     AI_API_KEY: str = os.getenv("AI_API_KEY", "")
     AI_BASE_URL: str = os.getenv("AI_BASE_URL", "")  # For generic/ollama
     AI_MODEL: str = os.getenv("AI_MODEL", "gpt-3.5-turbo")
+    AI_FALLBACK_PROVIDER: str = os.getenv("AI_FALLBACK_PROVIDER", "")
+    AI_FALLBACK_API_KEY: str = os.getenv("AI_FALLBACK_API_KEY", "")
+    AI_FALLBACK_MODEL: str = os.getenv("AI_FALLBACK_MODEL", "")
 
     # TMDb
     TMDB_API_KEY: str = os.getenv("TMDB_API_KEY", "")
