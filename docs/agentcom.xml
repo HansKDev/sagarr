@@ -900,4 +900,47 @@
             - docs/todo.md (Task 6.3 note) updated to mention persistence of admin-configured settings alongside the admin bootstrap flow.
         </message>
     </session>
+    <session id="38">
+        <timestamp>2025-11-25T14:30:00+01:00</timestamp>
+        <agent>Antigravity</agent>
+        <status>In Progress</status>
+        <message>
+            Integrated Sagarr assets and branding into the frontend.
+
+            Actions:
+            - Copied `sagarr_assets/logo-icon.svg` to `frontend/public/logo.svg`.
+            - Updated `frontend/src/index.css` with the contents of `sagarr_assets/sagarr-theme.css` to apply the "Neural Compass" theme (colors, fonts, dark mode).
+            - Added Google Fonts (Inter) link to `frontend/index.html`.
+            - Created `frontend/src/components/Logo.jsx` to render the SVG logo and wordmark as a reusable component.
+            - Updated `frontend/src/App.jsx` to use the `Logo` component and new CSS classes (`nav-header`, `nav-actions`, `btn-logout`) for a cleaner, branded layout.
+
+            Impact:
+            - The application now features the official Sagarr branding and color scheme.
+            - The navigation bar is styled consistently with the theme.
+        </message>
+    </session>
+    <session id="39">
+        <timestamp>2025-11-25T14:55:00+01:00</timestamp>
+        <agent>GPT-5.1</agent>
+        <status>In Progress</status>
+        <message>
+            Fixed the \"Failed to load recommendations\" issue by improving Tautulli user mapping and making recommendation errors clearer.
+
+            Changes:
+            - backend/app/routers/auth.py:
+              - Reworked the Tautulli mapping in /api/auth/callback:
+                - Fetches Tautulli users via tautulli_service.get_users().
+                - Attempts to map the Plex user using:
+                  1) Case-insensitive email match (Plex email == Tautulli email).
+                  2) Case-insensitive username/friendly_name match.
+                  3) Fallback: user_id match (Tautulli user_id == Plex id), preserving the previous behavior.
+                - Stores the matched t_user[\"user_id\"] in User.tautulli_user_id.
+            - backend/app/routers/recommendations.py:
+              - Wrapped the on-demand generate_recommendations() call in a try/except for ValueError and now returns HTTP 400 with the error message (e.g., \"User is not yet mapped to a Tautulli user.\") instead of a generic 500.
+
+            Impact:
+            - After logging out and logging back in (so the updated callback runs), users should be correctly mapped to their Tautulli user_id and /api/recommendations can pull history and generate categories.
+            - If mapping still fails for an edge case, the frontend will see a 400 with a clear message rather than a silent server error, making diagnostics easier.
+        </message>
+    </session>
 </agentcom>

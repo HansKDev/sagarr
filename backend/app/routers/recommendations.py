@@ -39,7 +39,11 @@ async def get_recommendations(
 
     if cache is None:
         # No cache yet; generate on demand
-        cache = await generate_recommendations(db, current_user.id)
+        try:
+            cache = await generate_recommendations(db, current_user.id)
+        except ValueError as exc:
+            # Surface mapping/config issues (e.g. missing Tautulli mapping)
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
 
     try:
         data = json.loads(cache.recommendations or "{}")
@@ -92,4 +96,3 @@ async def get_recommendations(
         categories.append(RecommendationCategory(title=title, reason=reason, items=items))
 
     return RecommendationsResponse(categories=categories)
-

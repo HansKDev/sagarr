@@ -127,12 +127,26 @@ async def callback(request: CallbackRequest, db: Session = Depends(get_db)):
     from ..services.tautulli import tautulli_service
     tautulli_users = await tautulli_service.get_users()
     tautulli_user_id = None
-    
-    # Tautulli 'user_id' is the Plex User ID. 
-    # We verify if this user exists in Tautulli to confirm we can fetch history.
+
+    # Map Plex user to Tautulli user.
+    # Prefer email match, then username/friendly_name, falling back to id if they align.
+    plex_email = (email or "").lower()
+    plex_username = (username or "").lower()
+
     for t_user in tautulli_users:
-        if str(t_user.get('user_id')) == str(plex_id):
-            tautulli_user_id = plex_id
+        t_email = (t_user.get("email") or "").lower()
+        t_username = (t_user.get("username") or "").lower()
+        t_friendly = (t_user.get("friendly_name") or "").lower()
+        t_id = t_user.get("user_id")
+
+        if plex_email and t_email and plex_email == t_email:
+            tautulli_user_id = t_id
+            break
+        if plex_username and plex_username in (t_username, t_friendly):
+            tautulli_user_id = t_id
+            break
+        if t_id is not None and str(t_id) == str(plex_id):
+            tautulli_user_id = t_id
             break
             
     user = db.query(models.User).filter(models.User.plex_id == plex_id).first()
