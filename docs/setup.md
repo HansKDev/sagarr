@@ -27,7 +27,7 @@ This guide will help you set up and run Sagarr, the AI-powered media recommendat
     SECRET_KEY=your_super_secret_key_here
     
     # URLs (for Docker, use the externally reachable frontend URL)
-    FRONTEND_URL=http://localhost:8090
+    FRONTEND_URL=http://localhost:8081
     
     # Optional Pre-configuration (can also be set in UI)
     TAUTULLI_URL=http://192.168.1.100:8181
@@ -45,7 +45,7 @@ This guide will help you set up and run Sagarr, the AI-powered media recommendat
     ```
 
 4.  **Access the Application**
-    Open your browser and navigate to `http://localhost:8090`.
+    Open your browser and navigate to `http://localhost:8081`.
 
 ## First Run
 

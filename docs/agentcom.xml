@@ -686,4 +686,29 @@
             - With the backend no longer crashing on startup, we should see real API responses instead of 502s / connection errors from nginx.
         </message>
     </session>
+    <session id="30">
+        <timestamp>2025-11-25T12:49:28+01:00</timestamp>
+        <agent>GPT-5.1</agent>
+        <status>In Progress</status>
+        <message>
+            Changed frontend host port from 8090 to 8081 to work around persistent host-side connection resets on 8090, while keeping container networking simple.
+
+            Changes:
+            - docker-compose.yml:
+              - Updated backend FRONTEND_URL env to http://localhost:8081.
+              - Updated frontend ports to map 8081:80 instead of 8090:80.
+            - docs/setup.md:
+              - Updated example FRONTEND_URL to http://localhost:8081.
+              - Updated "Access the Application" step to point to http://localhost:8081.
+
+            Rationale:
+            - Other services on this host (e.g., on 8080/8007) respond correctly over HTTP, but 8090 has repeatedly shown connection resets from the host despite containers being healthy.
+            - Mapping Sagarr's frontend to a different host port (8081) avoids whatever local quirk is affecting 8090 while keeping the compose/network configuration straightforward.
+
+            Next:
+            - docker compose up -d --build
+            - Access the UI at http://localhost:8081 instead of 8090.
+            - If issues persist on 8081, we will know the problem is more general than a single port and can look deeper at host networking; otherwise, this gives a stable entrypoint for GUI testing.
+        </message>
+    </session>
 </agentcom>
