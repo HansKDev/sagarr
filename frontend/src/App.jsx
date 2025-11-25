@@ -4,8 +4,7 @@ import Dashboard from './components/Dashboard'
 import Login from './components/Login'
 import LoginCallback from './components/LoginCallback'
 import AdminSettings from './components/AdminSettings'
-import { useEffect } from 'react'
-import { initAuthFromStorage } from './apiClient'
+import { initAuthFromStorage } from './apiClient.js'
 
 function ProtectedRoute({ children }) {
   const token = localStorage.getItem('token')
@@ -20,6 +19,7 @@ function App() {
     // Ensure Axios has the auth header on initial load if a token exists.
     initAuthFromStorage()
   }, [])
+
   const handleLogout = () => {
     localStorage.removeItem('token')
     localStorage.removeItem('user')
