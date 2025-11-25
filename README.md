@@ -2,6 +2,10 @@
 
 **Sagarr** is an AI-powered media recommendation engine designed to integrate seamlessly with the "Arr" stack (Sonarr, Radarr, Overseerr) and Plex/Tautulli. It acts as a personalized discovery layer, using your watch history to generate dynamic, creative recommendations.
 
+> ⚠️ **Status: Early Beta / Not Production-Hardened**  
+> Sagarr is experimental software. It has not undergone a formal security review and is not intended for multi-tenant or high-risk environments.  
+> Use at your own risk, and only expose it to the internet behind a trusted reverse proxy, with strong secrets and access limited to users you trust.
+
 ## Features
 
 -   **AI-Powered Recommendations**: Uses LLMs (OpenAI, Ollama, etc.) to invent creative categories (e.g., "Gritty 80s Cyberpunk") based on your taste.
