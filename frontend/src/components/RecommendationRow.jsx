@@ -16,9 +16,11 @@ function RecommendationRow({ category, onRated }) {
         {category.reason && <p className="recommendation-row-reason">{category.reason}</p>}
       </header>
       <div className="recommendation-row-scroll">
-        {category.items.map((item) => (
-          <MediaCard key={item.tmdb_id} item={item} onRated={onRated} />
-        ))}
+        {category.items
+          .filter((item) => item.title && item.title !== 'Unknown title')
+          .map((item) => (
+            <MediaCard key={item.tmdb_id} item={item} onRated={onRated} />
+          ))}
       </div>
     </section>
   )

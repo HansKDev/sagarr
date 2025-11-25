@@ -108,7 +108,7 @@ function MediaCard({ item, onRated }) {
         />
       )}
       <div className="media-body">
-        <h4 className="media-title">{item.title || 'Unknown title'}</h4>
+        <h4 className="media-title">{item.title}</h4>
         {item.overview && (
           <p className="media-overview">
             {item.overview.length > 160 ? `${item.overview.slice(0, 157)}...` : item.overview}
