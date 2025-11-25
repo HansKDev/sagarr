@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
+import { initAuthFromStorage } from '../apiClient'
 
 function LoginCallback() {
     const navigate = useNavigate()
@@ -22,6 +23,9 @@ function LoginCallback() {
                 localStorage.setItem('token', access_token)
                 localStorage.setItem('user', JSON.stringify(user))
                 localStorage.removeItem('plex_pin_id')
+
+                // Ensure Axios sends the token by default
+                initAuthFromStorage()
 
                 setStatus('Success! Redirecting...')
                 setTimeout(() => navigate('/'), 1000)

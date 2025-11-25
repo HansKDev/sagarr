@@ -370,4 +370,72 @@
             - Any further UI changes will be treated as polish beyond the original Phase 4 scope (e.g., hover effects, better empty states, or future Plex watchlist integration).
         </message>
     </session>
+    <session id="20">
+        <timestamp>2025-11-25T10:59:41+01:00</timestamp>
+        <agent>GPT-5.1</agent>
+        <status>In Progress</status>
+        <message>
+            Reviewed Antigravity's implementation end-to-end and identified a few polish / robustness items to address next:
+
+            1) Database configuration duplication:
+               - backend/app/database.py currently hardcodes SQLALCHEMY_DATABASE_URL = "sqlite:///./sagarr.db" and ignores the DATABASE_URL that docker-compose.yml sets for the backend service.
+               - backend/app/db.py wraps database.py but does not introduce its own URL; there are effectively two sources of truth (env vs hardcoded).
+               - Plan: update database.py to read DATABASE_URL from the environment (with a sensible default), so the docker-compose DATABASE_URL is actually respected and there is a single DB URL configuration path.
+
+            2) Admin settings authorization:
+               - backend/app/routers/admin.py exposes GET/POST /api/admin/settings without checking authentication or the User.is_admin flag.
+               - For a self-hosted tool this is not catastrophic, but it's still trivial for any authenticated user to change critical keys.
+               - Plan: wire admin routes through get_current_user() and require user.is_admin == True, returning 403 otherwise.
+
+            3) Frontend auth consistency for protected endpoints:
+               - AdminSettings explicitly attaches Authorization: Bearer headers, but Dashboard and MediaCard do not attach any token when calling /api/recommendations and /api/media/*.
+               - This works only if a cookie is set or Axios is configured globally, which is fragile.
+               - Plan: introduce a small shared helper (e.g., initAuthFromStorage) that sets axios.defaults.headers.common.Authorization from localStorage on app boot and after login, so all Axios calls automatically include the token.
+
+            4) Error handling / logging (not a blocker, but noted):
+               - Tautulli and Overseerr services catch broad Exceptions and print errors; this is acceptable for a prototype but not great for long-term observability.
+               - For now, I'll defer structural logging changes and focus on the config/admin/auth cleanup described above.
+
+            Next:
+            - Implement the database URL fix, admin-guarded settings endpoints, and Axios auth initialization, then document those changes in a follow-up session and commit them.
+        </message>
+    </session>
+    <session id="21">
+        <timestamp>2025-11-25T11:01:06+01:00</timestamp>
+        <agent>GPT-5.1</agent>
+        <status>In Progress</status>
+        <message>
+            Implemented the first batch of polish fixes identified in the previous review.
+
+            1) Database URL configuration:
+               - backend/app/database.py now reads SQLALCHEMY_DATABASE_URL from the DATABASE_URL environment variable, with a default of sqlite:///./sagarr.db.
+               - The engine is created with SQLite-specific connect_args only when the URL starts with "sqlite", which plays nicely with docker-compose.yml (which already sets DATABASE_URL=sqlite:///./data/sagarr.db for the backend).
+               - This removes the mismatch between docker-compose configuration and the hardcoded DB URL.
+
+            2) Admin settings authorization:
+               - backend/app/routers/admin.py:
+                 - Now imports get_current_user and User, and defines a small helper _ensure_admin(user) that raises 403 if user.is_admin is False.
+                 - Both GET /api/admin/settings and POST /api/admin/settings:
+                   - Depend on get_current_user to resolve the current user.
+                   - Call _ensure_admin(current_user) before returning or mutating any settings.
+                 - This preserves the existing in-memory settings-update behavior but restricts it to admin users.
+
+            3) Frontend auth initialization (Axios):
+               - Added frontend/src/apiClient.js with initAuthFromStorage(), which:
+                 - Reads 'token' from localStorage and, if present, sets axios.defaults.headers.common.Authorization = "Bearer &lt;token&gt;".
+                 - Clears the default header if no token is found.
+               - frontend/src/App.jsx:
+                 - Imports initAuthFromStorage and calls it once in a useEffect() when App mounts, so that all Axios calls have the Authorization header on page load if a token exists.
+               - frontend/src/components/LoginCallback.jsx:
+                 - After storing the access_token and user in localStorage, it now calls initAuthFromStorage() so Axios immediately starts sending the Authorization header for the new session.
+
+            Impact:
+            - DB: docker-compose’s DATABASE_URL is now respected by the backend, reducing confusion between local/dev and container environments.
+            - Admin: The settings API is no longer open to any bearer token; only users marked is_admin can read or update configuration via /api/admin/settings.
+            - Frontend auth: Protected endpoints (recommendations, media, admin) now receive the Authorization header consistently both after login and on page refresh.
+
+            Next:
+            - Leave deeper logging/observability improvements for a future iteration, unless they become a blocker during manual testing.
+        </message>
+    </session>
 </agentcom>

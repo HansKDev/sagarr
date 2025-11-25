@@ -1,14 +1,18 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
+from sqlalchemy.orm import Session
+
 from ..config import settings
 from ..database import get_db
-from sqlalchemy.orm import Session
-from .. import models
+from ..models import User
+from ..security import get_current_user
+
 
 router = APIRouter(
     prefix="/api/admin",
-    tags=["admin"]
+    tags=["admin"],
 )
+
 
 class SettingsUpdate(BaseModel):
     TAUTULLI_URL: str
@@ -19,11 +23,23 @@ class SettingsUpdate(BaseModel):
     AI_API_KEY: str
     AI_MODEL: str
 
+
+def _ensure_admin(user: User) -> None:
+    if not user.is_admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin privileges required",
+        )
+
+
 @router.get("/settings")
-async def get_settings(db: Session = Depends(get_db)):
-    # In a real app, we might check for admin role here
-    # For now, we return the current in-memory settings
-    # Note: We mask sensitive keys
+async def get_settings(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    _ensure_admin(current_user)
+
+    # Note: We mask sensitive keys in the API response
     return {
         "TAUTULLI_URL": settings.TAUTULLI_URL,
         "TAUTULLI_API_KEY": "***" if settings.TAUTULLI_API_KEY else "",
@@ -31,26 +47,34 @@ async def get_settings(db: Session = Depends(get_db)):
         "OVERSEERR_API_KEY": "***" if settings.OVERSEERR_API_KEY else "",
         "AI_PROVIDER": settings.AI_PROVIDER,
         "AI_API_KEY": "***" if settings.AI_API_KEY else "",
-        "AI_MODEL": settings.AI_MODEL
+        "AI_MODEL": settings.AI_MODEL,
     }
 
+
 @router.post("/settings")
-async def update_settings(new_settings: SettingsUpdate, db: Session = Depends(get_db)):
-    # In a real app, we would persist these to a DB or .env file
-    # For this MVP, we will update the in-memory settings object
-    
+async def update_settings(
+    new_settings: SettingsUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    _ensure_admin(current_user)
+
     # Only update if value is provided (and not masked)
-    if new_settings.TAUTULLI_URL: settings.TAUTULLI_URL = new_settings.TAUTULLI_URL
-    if new_settings.TAUTULLI_API_KEY and "***" not in new_settings.TAUTULLI_API_KEY: 
+    if new_settings.TAUTULLI_URL:
+        settings.TAUTULLI_URL = new_settings.TAUTULLI_URL
+    if new_settings.TAUTULLI_API_KEY and "***" not in new_settings.TAUTULLI_API_KEY:
         settings.TAUTULLI_API_KEY = new_settings.TAUTULLI_API_KEY
-        
-    if new_settings.OVERSEERR_URL: settings.OVERSEERR_URL = new_settings.OVERSEERR_URL
+
+    if new_settings.OVERSEERR_URL:
+        settings.OVERSEERR_URL = new_settings.OVERSEERR_URL
     if new_settings.OVERSEERR_API_KEY and "***" not in new_settings.OVERSEERR_API_KEY:
         settings.OVERSEERR_API_KEY = new_settings.OVERSEERR_API_KEY
-        
-    if new_settings.AI_PROVIDER: settings.AI_PROVIDER = new_settings.AI_PROVIDER
+
+    if new_settings.AI_PROVIDER:
+        settings.AI_PROVIDER = new_settings.AI_PROVIDER
     if new_settings.AI_API_KEY and "***" not in new_settings.AI_API_KEY:
         settings.AI_API_KEY = new_settings.AI_API_KEY
-    if new_settings.AI_MODEL: settings.AI_MODEL = new_settings.AI_MODEL
-    
+    if new_settings.AI_MODEL:
+        settings.AI_MODEL = new_settings.AI_MODEL
+
     return {"status": "updated"}
