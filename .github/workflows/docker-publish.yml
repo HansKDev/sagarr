@@ -1,0 +1,74 @@
+name: Build and publish Docker images
+
+on:
+  push:
+    branches:
+      - master
+      - main
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_BACKEND: ${{ github.repository_owner }}/sagarr-backend
+  IMAGE_FRONTEND: ${{ github.repository_owner }}/sagarr-frontend
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set image tags
+        id: vars
+        run: |
+          # Default tag is the short SHA
+          SHA_TAG=${GITHUB_SHA::7}
+          TAGS_BACKEND="${REGISTRY}/${IMAGE_BACKEND}:${SHA_TAG}"
+          TAGS_FRONTEND="${REGISTRY}/${IMAGE_FRONTEND}:${SHA_TAG}"
+
+          # For pushes to default branches, also tag as :latest
+          if [[ "${GITHUB_REF}" == "refs/heads/master" || "${GITHUB_REF}" == "refs/heads/main" ]]; then
+            TAGS_BACKEND="${TAGS_BACKEND},${REGISTRY}/${IMAGE_BACKEND}:latest"
+            TAGS_FRONTEND="${TAGS_FRONTEND},${REGISTRY}/${IMAGE_FRONTEND}:latest"
+          fi
+
+          # For version tags (v1.2.3), also tag with the ref name
+          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            VERSION_TAG="${GITHUB_REF#refs/tags/}"
+            TAGS_BACKEND="${TAGS_BACKEND},${REGISTRY}/${IMAGE_BACKEND}:${VERSION_TAG}"
+            TAGS_FRONTEND="${TAGS_FRONTEND},${REGISTRY}/${IMAGE_FRONTEND}:${VERSION_TAG}"
+          fi
+
+          echo "backend_tags=${TAGS_BACKEND}" >> "$GITHUB_OUTPUT"
+          echo "frontend_tags=${TAGS_FRONTEND}" >> "$GITHUB_OUTPUT"
+
+      - name: Build and push backend image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: true
+          tags: ${{ steps.vars.outputs.backend_tags }}
+
+      - name: Build and push frontend image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          push: true
+          tags: ${{ steps.vars.outputs.frontend_tags }}
+
