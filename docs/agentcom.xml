@@ -584,4 +584,106 @@
             - Retry the Plex login flow; if it still fails, capture the new "detail" message from the /api/auth/callback response so we can see whether it's an authorization/timing issue with the PIN or a genuine Plex API error.
         </message>
     </session>
+    <session id="27">
+        <timestamp>2025-11-25T12:32:33+01:00</timestamp>
+        <agent>GPT-5.1</agent>
+        <status>In Progress</status>
+        <message>
+            Fixed 404 on /api/recommendations by registering the recommendations (and media) routers in the FastAPI app.
+
+            Issue:
+            - The frontend Dashboard was calling GET /api/recommendations and showing "Failed to load recommendations".
+            - Backend logs showed 404 Not Found for /api/recommendations, even though app/routers/recommendations.py exists and defines that route.
+            - Inspection of app/main.py in the container revealed that only auth and admin routers were included:
+              - app.include_router(auth.router)
+              - app.include_router(admin.router)
+              - The recommendations and media routers were never registered with the FastAPI app.
+
+            Change:
+            - backend/app/main.py:
+              - Updated imports to bring in the media and recommendations routers:
+                - from .routers import auth, admin, media, recommendations
+              - After configuring CORS, now include:
+                - app.include_router(auth.router)
+                - app.include_router(admin.router)
+                - app.include_router(media.router)
+                - app.include_router(recommendations.router)
+              - Also expanded CORS origins to include http://localhost:8090 (the Docker nginx frontend) alongside the existing dev URLs.
+
+            Impact:
+            - /api/recommendations and /api/media/* are now properly mounted on the FastAPI app.
+            - The Dashboard's GET /api/recommendations call should no longer 404; instead, it will either:
+              - Return recommendation data (if available), or
+              - Return an auth or upstream error that we can debug next.
+
+            Next:
+            - Rebuild/restart backend (already done via docker compose up -d --build backend in an earlier step).
+            - Retry the Dashboard "Recommendations" section in the UI and, if it still fails, capture the new HTTP status and response body for /api/recommendations to see whether it's an auth issue (401), AI/metadata config issue, or something else.
+        </message>
+    </session>
+    <session id="28">
+        <timestamp>2025-11-25T12:43:34+01:00</timestamp>
+        <agent>GPT-5.1</agent>
+        <status>In Progress</status>
+        <message>
+            Simplified Docker networking again to ensure clean container-to-container access and avoid nginx 502s from the Admin Settings page.
+
+            Issue:
+            - Admin Settings POST /api/admin/settings was returning 502 Bad Gateway from nginx.
+            - nginx logs showed "Bad Gateway", and a quick wget from inside the frontend container to the backend via the host bridge IP (172.17.0.1:8000) failed with "connection refused".
+            - This was caused by an attempt to reach the backend via the host's docker0 IP while both services were using network_mode: bridge, which turned out to be brittle.
+
+            Changes:
+            - docker-compose.yml:
+              - Removed network_mode: bridge from both backend and frontend.
+              - This returns Sagarr to the standard docker-compose behavior:
+                - A dedicated user-defined network (sagarr_default) where service names resolve via Docker DNS.
+            - frontend/nginx.conf:
+              - Updated /api upstream from '172.17.0.1:8000' back to 'http://backend:8000', relying on the compose service name and network DNS.
+
+            Rationale:
+            - On a user-defined bridge (sagarr_default), Docker provides proper DNS for service names like 'backend', and containers can talk to each other reliably.
+            - Host access via published ports (8000/8090) continues to work as before; the earlier host-side reset issue appears to have been resolved by restarting Docker and the stack.
+
+            Next:
+            - docker compose down && docker compose up -d --build (already run).
+            - Verify from frontend container:
+              - docker exec sagarr-frontend wget -qO- http://backend:8000/api/health
+            - From host:
+              - curl http://localhost:8000/api/health
+              - curl http://localhost:8090/api/admin/settings (with Authorization header) and confirm 200/403 rather than 502.
+            - Then retry Admin Settings in the browser; the 502s should disappear, and any remaining errors will be actual backend responses (e.g., 403 if not admin).
+        </message>
+    </session>
+    <session id="29">
+        <timestamp>2025-11-25T12:45:29+01:00</timestamp>
+        <agent>GPT-5.1</agent>
+        <status>In Progress</status>
+        <message>
+            Fixed backend crash caused by EmailStr and missing email-validator dependency.
+
+            Issue:
+            - sagarr-backend was repeatedly restarting.
+            - docker logs sagarr-backend showed:
+              ImportError: email-validator is not installed, run `pip install 'pydantic[email]'`
+            - This error originated from backend/app/schemas.py, where we use pydantic.EmailStr, which requires the optional email-validator package.
+
+            Change:
+            - backend/requirements.txt:
+              - Added:
+                - email-validator>=2.1.0.post1
+              - This satisfies pydantic's EmailStr dependency in the backend container.
+
+            Next:
+            - Rebuild and restart the backend:
+              - docker compose up -d --build backend
+            - Verify backend is stable:
+              - docker logs sagarr-backend --tail=20 (no ImportError)
+              - curl http://localhost:8000/api/health
+            - Then re-test:
+              - /api/recommendations from the UI
+              - Admin Settings POST /api/admin/settings
+            - With the backend no longer crashing on startup, we should see real API responses instead of 502s / connection errors from nginx.
+        </message>
+    </session>
 </agentcom>

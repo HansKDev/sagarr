@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from .database import engine, Base, SessionLocal
 from . import models
 from .models import User
-from .routers import auth, admin
+from .routers import auth, admin, media, recommendations
 from .services.recommendations import generate_recommendations
 
 # Create tables
@@ -15,11 +15,13 @@ models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Sagarr API", version="0.1.0")
 
+
 # Configure CORS
 origins = [
-    "http://localhost:5173",  # Vite default
+    "http://localhost:5173",  # Vite default (dev)
     "http://localhost:3000",  # React default
     "http://127.0.0.1:5173",
+    "http://localhost:8090",  # Docker nginx frontend
 ]
 
 app.add_middleware(
@@ -30,8 +32,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 app.include_router(auth.router)
 app.include_router(admin.router)
+app.include_router(media.router)
+app.include_router(recommendations.router)
 
 
 @app.get("/api/health")
