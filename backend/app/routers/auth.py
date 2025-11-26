@@ -138,6 +138,10 @@ async def callback(request: CallbackRequest, db: Session = Depends(get_db)):
         t_username = (t_user.get("username") or "").lower()
         t_friendly = (t_user.get("friendly_name") or "").lower()
         t_id = t_user.get("user_id")
+        
+        # Sometimes Tautulli returns user_id as integer, sometimes string. Normalize.
+        t_id_str = str(t_id) if t_id is not None else ""
+        plex_id_str = str(plex_id) if plex_id is not None else ""
 
         if plex_email and t_email and plex_email == t_email:
             tautulli_user_id = t_id
@@ -145,7 +149,7 @@ async def callback(request: CallbackRequest, db: Session = Depends(get_db)):
         if plex_username and plex_username in (t_username, t_friendly):
             tautulli_user_id = t_id
             break
-        if t_id is not None and str(t_id) == str(plex_id):
+        if t_id_str and plex_id_str and t_id_str == plex_id_str:
             tautulli_user_id = t_id
             break
             

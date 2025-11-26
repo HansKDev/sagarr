@@ -57,11 +57,18 @@ async def generate_recommendations(db: Session, user_id: int) -> RecommendationC
     if user is None:
         raise ValueError(f"User {user_id} not found.")
 
-    if not user.tautulli_user_id:
-        raise ValueError("User is not yet mapped to a Tautulli user.")
-
     # Fetch history (limit increased to get enough of both types)
-    tautulli_history = await get_user_history(int(user.tautulli_user_id), limit=300)
+    tautulli_history: list[dict[str, Any]] = []
+    if user.tautulli_user_id:
+        try:
+            tautulli_history = await get_user_history(int(user.tautulli_user_id), limit=300)
+        except Exception:
+            # If Tautulli fetch fails, proceed with empty history to avoid blocking login.
+            tautulli_history = []
+    else:
+        # User not mapped to Tautulli (new user or Tautulli down).
+        # Proceed with empty history so AI can generate generic recommendations.
+        pass
 
     # Strip out explicit adult content before it ever reaches the AI.
     tautulli_history = [item for item in tautulli_history if not _looks_adult(item)]
