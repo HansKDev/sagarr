@@ -237,6 +237,25 @@ async def get_stats(
     # Count requests (if we track them in DB? Currently requests go straight to Overseerr)
     # We don't have a local table for requests yet, so we can only count local interactions.
 
+    # Per-user statistics
+    users = db.query(User).all()
+    user_stats = []
+    for u in users:
+        u_likes = db.query(UserPreference).filter(UserPreference.user_id == u.id, UserPreference.rating == 1).count()
+        u_dislikes = db.query(UserPreference).filter(UserPreference.user_id == u.id, UserPreference.rating == -1).count()
+        u_seen = db.query(UserPreference).filter(UserPreference.user_id == u.id, UserPreference.rating == 0).count()
+        
+        user_stats.append({
+            "username": u.username or u.email or f"User {u.id}",
+            "likes": u_likes,
+            "dislikes": u_dislikes,
+            "seen": u_seen,
+            "total": u_likes + u_dislikes + u_seen
+        })
+
+    # Sort by total activity
+    user_stats.sort(key=lambda x: x["total"], reverse=True)
+
     return {
         "total_users": total_users,
         "interactions": {
@@ -244,5 +263,6 @@ async def get_stats(
             "dislikes": dislikes,
             "seen": seen,
             "total": likes + dislikes + seen
-        }
+        },
+        "user_stats": user_stats
     }

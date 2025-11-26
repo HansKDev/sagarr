@@ -82,6 +82,54 @@ function StatsSection() {
                     <div style={{ fontSize: '0.9rem', color: 'var(--text-dim)' }}>Total Interactions</div>
                 </div>
             </div>
+
+            {stats.user_stats && stats.user_stats.length > 0 && (
+                <CollapsibleUserStats users={stats.user_stats} />
+            )}
+        </div>
+    )
+}
+
+function CollapsibleUserStats({ users }) {
+    const [isOpen, setIsOpen] = useState(false)
+
+    return (
+        <div style={{ marginTop: '1.5rem', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '1rem' }}>
+            <button
+                onClick={() => setIsOpen(!isOpen)}
+                className="btn btn-ghost"
+                style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.5rem' }}
+            >
+                <span style={{ color: 'var(--text-light)', fontWeight: 'bold' }}>User Activity Details</span>
+                <span>{isOpen ? '▲' : '▼'}</span>
+            </button>
+
+            {isOpen && (
+                <div style={{ marginTop: '1rem', overflowX: 'auto', animation: 'fadeIn 0.3s ease-in-out' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
+                        <thead>
+                            <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.1)', textAlign: 'left' }}>
+                                <th style={{ padding: '0.75rem', color: 'var(--text-dim)' }}>User</th>
+                                <th style={{ padding: '0.75rem', color: '#10b981' }}>Likes</th>
+                                <th style={{ padding: '0.75rem', color: '#ef4444' }}>Dislikes</th>
+                                <th style={{ padding: '0.75rem', color: '#3b82f6' }}>Seen</th>
+                                <th style={{ padding: '0.75rem', color: 'white' }}>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {users.map((user, idx) => (
+                                <tr key={idx} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                                    <td style={{ padding: '0.75rem', color: 'white' }}>{user.username}</td>
+                                    <td style={{ padding: '0.75rem', color: '#10b981' }}>{user.likes}</td>
+                                    <td style={{ padding: '0.75rem', color: '#ef4444' }}>{user.dislikes}</td>
+                                    <td style={{ padding: '0.75rem', color: '#3b82f6' }}>{user.seen}</td>
+                                    <td style={{ padding: '0.75rem', color: 'white', fontWeight: 'bold' }}>{user.total}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            )}
         </div>
     )
 }
