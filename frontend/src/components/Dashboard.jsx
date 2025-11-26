@@ -1,14 +1,22 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 import RecommendationRow from './RecommendationRow'
+import WelcomeModal from './WelcomeModal'
 
 function Dashboard() {
   const [data, setData] = useState({ movies: [], tv: [], documentaries: [] })
   const [activeTab, setActiveTab] = useState('movies') // 'movies' | 'tv' | 'documentaries'
   const [loadingRecs, setLoadingRecs] = useState(false)
   const [error, setError] = useState(null)
+  const [showWelcome, setShowWelcome] = useState(false)
 
   useEffect(() => {
+    // Check if user has seen the welcome modal
+    const hasSeenWelcome = localStorage.getItem('welcome_seen')
+    if (!hasSeenWelcome) {
+      setShowWelcome(true)
+    }
+
     const fetchRecommendations = async () => {
       try {
         setLoadingRecs(true)
@@ -52,6 +60,7 @@ function Dashboard() {
 
   return (
     <div className="dashboard">
+      {showWelcome && <WelcomeModal onClose={() => setShowWelcome(false)} />}
       <div style={{ textAlign: 'left' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
           <h2 style={{ margin: 0, color: 'var(--text-light)' }}>Your Recommendations</h2>
