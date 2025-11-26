@@ -40,10 +40,12 @@ function AdminRoute({ children }) {
   return children
 }
 
+// Ensure Axios has the auth header on initial load if a token exists.
+initAuthFromStorage()
+
 function App() {
   useEffect(() => {
-    // Ensure Axios has the auth header on initial load if a token exists.
-    initAuthFromStorage()
+    // Optional: Add global error handler or other init logic here
   }, [])
 
   return (

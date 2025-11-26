@@ -109,7 +109,18 @@ function MediaCard({ item, onRated }) {
         />
       )}
       <div className="media-body">
-        <h4 className="media-title">{item.title}</h4>
+        <h4 className="media-title">
+          <a
+            href={`https://www.themoviedb.org/${item.media_type || 'movie'}/${item.tmdb_id}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: 'inherit', textDecoration: 'none' }}
+            onMouseOver={(e) => (e.target.style.textDecoration = 'underline')}
+            onMouseOut={(e) => (e.target.style.textDecoration = 'none')}
+          >
+            {item.title}
+          </a>
+        </h4>
         {item.overview && (
           <p className="media-overview">
             {item.overview.length > 160 ? `${item.overview.slice(0, 157)}...` : item.overview}
