@@ -61,7 +61,8 @@ async def generate_recommendations(db: Session, user_id: int) -> RecommendationC
     tautulli_history: list[dict[str, Any]] = []
     if user.tautulli_user_id:
         try:
-            tautulli_history = await get_user_history(int(user.tautulli_user_id), limit=300)
+            # Increased limit to 1000 to get a deeper history pool
+            tautulli_history = await get_user_history(int(user.tautulli_user_id), limit=1000)
         except Exception:
             # If Tautulli fetch fails, proceed with empty history to avoid blocking login.
             tautulli_history = []
@@ -86,13 +87,22 @@ async def generate_recommendations(db: Session, user_id: int) -> RecommendationC
     movies_history = [item for item in tautulli_history if item.get("media_type") == "movie"]
     tv_history = [item for item in tautulli_history if item.get("media_type") in ("show", "episode", "season")]
 
-    # Prepare context slices
-    # Up to 20 movies for stronger signal.
-    top_movies = movies_history[:20]
-    recent_movies = movies_history[:20]
+    # Randomly sample from history to give AI variety (avoiding recency bias)
+    import random
+    
+    # Sample 50 random movies (if available)
+    sampled_movies = random.sample(movies_history, min(len(movies_history), 50))
+    
+    # Sample 20 random TV items (if available)
+    sampled_tv = random.sample(tv_history, min(len(tv_history), 20))
 
-    top_tv = tv_history[:10]
-    recent_tv = tv_history[:20]
+    # Prepare context slices
+    # We use the sampled lists instead of just the top/recent slices
+    top_movies = sampled_movies
+    recent_movies = movies_history[:10] # Keep a few actual recent ones for context
+
+    top_tv = sampled_tv
+    recent_tv = tv_history[:10]
 
     # Derive a compact list of unique series titles (max 10) from TV history.
     series_titles: list[str] = []
@@ -106,7 +116,7 @@ async def generate_recommendations(db: Session, user_id: int) -> RecommendationC
             continue
         seen_series.add(name)
         series_titles.append(name)
-        if len(series_titles) >= 10:
+        if len(series_titles) >= 15: # Increased to 15 for more variety
             break
 
     # Heuristic: collect up to 10 documentary items from history based on
@@ -182,6 +192,7 @@ async def generate_recommendations(db: Session, user_id: int) -> RecommendationC
         "- Generate at least 10-15 distinct categories for 'tv'.\n"
         "- Generate at least 5-8 distinct categories for 'documentaries'.\n"
         "- Each category should contain 5-10 items.\n"
+        "IMPORTANT: Even if the user has NO documentary history, you MUST generate 5-8 categories of popular, high-quality documentaries (e.g., Nature, True Crime, Science, History). Do not return an empty list for documentaries.\n"
         "Be specific and niche with your categories (e.g., 'Cyberpunk Thrillers', 'Slow-Burn Sci-Fi', '80s Action Classics'). "
         "Remember: respond only with JSON and no extra commentary."
     )

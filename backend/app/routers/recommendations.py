@@ -132,8 +132,17 @@ async def get_recommendations(
     )
     cache = db.execute(stmt).scalars().first()
 
+    if cache is not None:
+        # Check if cache is older than 24 hours
+        from datetime import datetime, timedelta
+        if datetime.utcnow() - cache.created_at > timedelta(hours=24):
+            # Cache expired, delete it so we generate fresh recs
+            db.delete(cache)
+            db.commit()
+            cache = None
+
     if cache is None:
-        # No cache yet; generate on demand
+        # No cache yet or expired; generate on demand
         try:
             cache = await generate_recommendations(db, current_user.id)
         except ValueError as exc:
