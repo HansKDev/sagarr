@@ -5,30 +5,30 @@ const translations = {
         title: "Welcome to Sagarr!",
         intro: "Your personal AI-powered media concierge.",
         howItWorks: "Here's how to get the best experience:",
-        step1: "👍 Like or 👎 Dislike movies and shows to train your AI.",
+        step1: "👍 Like, 👎 Dislike, or 👎 Skip movies to train your AI.",
         step2: "Click 'Request' to add new content to your library.",
         step3: "Use 'Seen it' to hide things you've already watched.",
-        tip: "Tip: The more you rate, the better your recommendations become!",
+        tip: "Tip: Skipping items (👎) helps the AI learn what you aren't interested in right now!",
         button: "Got it, let's go!"
     },
     nl: {
         title: "Welkom bij Sagarr!",
         intro: "Jouw persoonlijke AI-media-assistent.",
         howItWorks: "Zo krijg je de beste ervaring:",
-        step1: "👍 Like of 👎 Dislike films en series om je AI te trainen.",
+        step1: "👍 Like, 👎 Dislike of 👎 Skip films om je AI te trainen.",
         step2: "Klik op 'Aanvragen' om nieuwe content toe te voegen.",
         step3: "Gebruik 'Gezien' om dingen te verbergen die je al hebt gekeken.",
-        tip: "Tip: Hoe meer je beoordeelt, hoe beter je aanbevelingen worden!",
+        tip: "Tip: Items overslaan (👎) helpt de AI te leren waar je nu geen interesse in hebt!",
         button: "Begrepen, laten we beginnen!"
     },
     de: {
         title: "Willkommen bei Sagarr!",
         intro: "Ihr persönlicher KI-Medien-Concierge.",
         howItWorks: "So erhalten Sie das beste Erlebnis:",
-        step1: "👍 Liken oder 👎 Disliken Sie Filme und Serien, um Ihre KI zu trainieren.",
+        step1: "👍 Liken, 👎 Disliken oder 👎 Überspringen Sie Filme, um Ihre KI zu trainieren.",
         step2: "Klicken Sie auf 'Anfragen', um neue Inhalte hinzuzufügen.",
         step3: "Nutzen Sie 'Gesehen', um bereits gesehene Inhalte auszublenden.",
-        tip: "Tipp: Je mehr Sie bewerten, desto besser werden Ihre Empfehlungen!",
+        tip: "Tipp: Das Überspringen (👎) von Elementen hilft der KI zu lernen, woran Sie gerade kein Interesse haben!",
         button: "Verstanden, los geht's!"
     }
 }
