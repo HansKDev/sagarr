@@ -56,6 +56,8 @@ async def _enrich_categories(
     # Collect TMDb IDs
     tmdb_ids: set[int] = set()
     for cat in raw_categories:
+        if not isinstance(cat, dict):
+            continue
         for tmdb_id in cat.get("items", []):
             if isinstance(tmdb_id, int):
                 tmdb_ids.add(tmdb_id)
@@ -76,6 +78,8 @@ async def _enrich_categories(
 
     categories: list[RecommendationCategory] = []
     for cat in raw_categories:
+        if not isinstance(cat, dict):
+            continue
         title = cat.get("title") or "Recommendations"
         reason = cat.get("reason") or ""
         items: list[MediaItem] = []
