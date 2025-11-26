@@ -212,3 +212,37 @@ async def test_tmdb(current_user: User = Depends(get_current_user)) -> TestResul
 
     title = details[0].get("title") or details[0].get("name") or "Unknown"
     return TestResult(ok=True, message=f"TMDb reachable. Example movie title: {title}.")
+
+
+@router.get("/stats")
+async def get_stats(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    _ensure_admin(current_user)
+
+    from sqlalchemy import func
+    from ..models import UserPreference
+
+    # Count total users
+    total_users = db.query(User).count()
+
+    # Count interactions
+    # rating=1 (Like), rating=-1 (Dislike), rating=0 (Seen/Skip depending on context, but usually Seen)
+    # Actually, let's break it down by rating value
+    likes = db.query(UserPreference).filter(UserPreference.rating == 1).count()
+    dislikes = db.query(UserPreference).filter(UserPreference.rating == -1).count()
+    seen = db.query(UserPreference).filter(UserPreference.rating == 0).count()
+
+    # Count requests (if we track them in DB? Currently requests go straight to Overseerr)
+    # We don't have a local table for requests yet, so we can only count local interactions.
+
+    return {
+        "total_users": total_users,
+        "interactions": {
+            "likes": likes,
+            "dislikes": dislikes,
+            "seen": seen,
+            "total": likes + dislikes + seen
+        }
+    }

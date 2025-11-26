@@ -33,6 +33,59 @@ const PROVIDER_INFO = {
     },
 }
 
+function StatsSection() {
+    const [stats, setStats] = useState(null)
+    const [loading, setLoading] = useState(true)
+
+    useEffect(() => {
+        const fetchStats = async () => {
+            try {
+                const token = localStorage.getItem('token')
+                const res = await axios.get('/api/admin/stats', {
+                    headers: { Authorization: `Bearer ${token}` }
+                })
+                setStats(res.data)
+            } catch (err) {
+                console.error('Failed to fetch stats', err)
+            } finally {
+                setLoading(false)
+            }
+        }
+        fetchStats()
+    }, [])
+
+    if (loading) return <div style={{ marginBottom: '2rem', padding: '1rem', background: 'var(--bg-card)', borderRadius: '8px' }}>Loading stats...</div>
+    if (!stats) return null
+
+    return (
+        <div style={{ marginBottom: '2rem', padding: '1.5rem', background: 'var(--bg-card)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)' }}>
+            <h3 style={{ marginTop: 0, marginBottom: '1rem', color: 'var(--sagarr-cyan)' }}>System Statistics</h3>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem' }}>
+                <div style={{ textAlign: 'center', padding: '1rem', background: 'rgba(255,255,255,0.05)', borderRadius: '8px' }}>
+                    <div style={{ fontSize: '2rem', fontWeight: 'bold', color: 'white' }}>{stats.total_users}</div>
+                    <div style={{ fontSize: '0.9rem', color: 'var(--text-dim)' }}>Total Users</div>
+                </div>
+                <div style={{ textAlign: 'center', padding: '1rem', background: 'rgba(255,255,255,0.05)', borderRadius: '8px' }}>
+                    <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#10b981' }}>{stats.interactions.likes}</div>
+                    <div style={{ fontSize: '0.9rem', color: 'var(--text-dim)' }}>Likes</div>
+                </div>
+                <div style={{ textAlign: 'center', padding: '1rem', background: 'rgba(255,255,255,0.05)', borderRadius: '8px' }}>
+                    <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#ef4444' }}>{stats.interactions.dislikes}</div>
+                    <div style={{ fontSize: '0.9rem', color: 'var(--text-dim)' }}>Dislikes</div>
+                </div>
+                <div style={{ textAlign: 'center', padding: '1rem', background: 'rgba(255,255,255,0.05)', borderRadius: '8px' }}>
+                    <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#3b82f6' }}>{stats.interactions.seen}</div>
+                    <div style={{ fontSize: '0.9rem', color: 'var(--text-dim)' }}>Seen/Skipped</div>
+                </div>
+                <div style={{ textAlign: 'center', padding: '1rem', background: 'rgba(255,255,255,0.05)', borderRadius: '8px' }}>
+                    <div style={{ fontSize: '2rem', fontWeight: 'bold', color: 'white' }}>{stats.interactions.total}</div>
+                    <div style={{ fontSize: '0.9rem', color: 'var(--text-dim)' }}>Total Interactions</div>
+                </div>
+            </div>
+        </div>
+    )
+}
+
 function AdminSettings() {
     const [settings, setSettings] = useState({
         TAUTULLI_URL: '',
@@ -146,6 +199,8 @@ function AdminSettings() {
                     Back to Dashboard
                 </button>
             </div>
+
+            <StatsSection />
 
             {message && <div style={{ padding: '1rem', background: '#333', marginBottom: '1rem', borderRadius: '4px' }}>{message}</div>}
 
