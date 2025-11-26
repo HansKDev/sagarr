@@ -8,7 +8,7 @@ from sqlalchemy import select, desc
 from sqlalchemy.orm import Session
 
 from ..db import get_db
-from ..models import RecommendationCache
+from ..models import RecommendationCache, UserPreference
 from ..schemas import RecommendationsResponse, RecommendationCategory, MediaItem
 from ..security import get_current_user
 from ..services.metadata import fetch_tmdb_details, MetadataNotConfiguredError
@@ -149,8 +149,18 @@ async def get_recommendations(
     raw_tv = data.get("tv", [])
     raw_docs = data.get("documentaries", [])
 
+    # Fetch live rated IDs to ensure immediate feedback (hiding rated items)
+    # even if the cache is stale.
+    rated_stmt = select(UserPreference.tmdb_id).where(UserPreference.user_id == current_user.id)
+    live_rated_ids = {
+        tmdb_id for tmdb_id in db.execute(rated_stmt).scalars().all() 
+        if tmdb_id is not None
+    }
+
     watched_titles = {t.strip().lower() for t in data.get("watched_titles", []) if isinstance(t, str)}
-    blocked_tmdb_ids: set[int] = set()
+    blocked_tmdb_ids = live_rated_ids
+    
+    # Merge with cached blocked IDs just in case, though live DB should cover it.
     for raw_id in data.get("rated_tmdb_ids", []) or []:
         try:
             blocked_tmdb_ids.add(int(raw_id))
