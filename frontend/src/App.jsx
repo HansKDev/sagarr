@@ -5,7 +5,7 @@ import Login from './components/Login'
 import LoginCallback from './components/LoginCallback'
 import History from './components/History'
 import AdminSettings from './components/AdminSettings'
-import Logo from './components/Logo'
+import NavBar from './components/NavBar'
 import { initAuthFromStorage } from './apiClient.js'
 
 function getStoredUser() {
@@ -46,34 +46,10 @@ function App() {
     initAuthFromStorage()
   }, [])
 
-  const handleLogout = () => {
-    localStorage.removeItem('token')
-    localStorage.removeItem('user')
-    window.location.href = '/login'
-  }
-
   return (
     <Router>
       <div className="app-container">
-        <nav className="nav-header">
-          <Link to="/" style={{ textDecoration: 'none' }}>
-            <Logo />
-          </Link>
-
-          <div className="nav-actions">
-            {localStorage.getItem('token') && (
-              <>
-                <Link to="/history" className="nav-link">History</Link>
-                {getStoredUser()?.is_admin && (
-                  <Link to="/admin" className="nav-link">Admin</Link>
-                )}
-                <button onClick={handleLogout} className="btn-logout">
-                  Logout
-                </button>
-              </>
-            )}
-          </div>
-        </nav>
+        <NavBar />
 
         <Routes>
           <Route path="/" element={

@@ -21,6 +21,13 @@ function Dashboard() {
         setData({ movies, tv, documentaries })
       } catch (err) {
         console.error(err)
+        if (err.response && err.response.status === 401) {
+          // Token expired or invalid, force logout
+          localStorage.removeItem('token')
+          localStorage.removeItem('user')
+          window.location.href = '/login'
+          return
+        }
         setError('Failed to load recommendations')
       } finally {
         setLoadingRecs(false)
