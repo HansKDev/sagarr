@@ -16,6 +16,7 @@ class User(Base):
     is_admin = Column(Boolean, default=False)
     tautulli_user_id = Column(Integer, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+    settings = Column(Text, default="{}") # JSON blob for user preferences
 
     recommendations = relationship("RecommendationCache", back_populates="user")
     preferences = relationship("UserPreference", back_populates="user")

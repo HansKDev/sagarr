@@ -4,6 +4,7 @@ import Dashboard from './components/Dashboard'
 import Login from './components/Login'
 import LoginCallback from './components/LoginCallback'
 import History from './components/History'
+import UserSettings from './components/UserSettings'
 import AdminSettings from './components/AdminSettings'
 import NavBar from './components/NavBar'
 import { initAuthFromStorage } from './apiClient.js'
@@ -62,6 +63,11 @@ function App() {
           <Route path="/history" element={
             <ProtectedRoute>
               <History />
+            </ProtectedRoute>
+          } />
+          <Route path="/settings" element={
+            <ProtectedRoute>
+              <UserSettings />
             </ProtectedRoute>
           } />
           <Route path="/admin" element={

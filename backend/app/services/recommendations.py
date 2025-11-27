@@ -194,8 +194,21 @@ async def generate_recommendations(db: Session, user_id: int) -> RecommendationC
         "- Each category should contain 5-10 items.\n"
         "IMPORTANT: Even if the user has NO documentary history, you MUST generate 5-8 categories of popular, high-quality documentaries (e.g., Nature, True Crime, Science, History). Do not return an empty list for documentaries.\n"
         "Be specific and niche with your categories (e.g., 'Cyberpunk Thrillers', 'Slow-Burn Sci-Fi', '80s Action Classics'). "
-        "Remember: respond only with JSON and no extra commentary."
     )
+
+    # Apply user settings
+    settings = {}
+    if user.settings:
+        try:
+            settings = json.loads(user.settings)
+        except json.JSONDecodeError:
+            pass
+    
+    date_cutoff = settings.get("date_cutoff")
+    if date_cutoff:
+        prompt += f"\nCRITICAL: The user has requested to ONLY see content released AFTER the year {date_cutoff}. Do NOT recommend anything older than {date_cutoff}.\n"
+
+    prompt += "Remember: respond only with JSON and no extra commentary."
 
     provider = get_ai_provider()
     raw_text = await provider.generate(prompt=prompt, system_prompt=system_prompt)

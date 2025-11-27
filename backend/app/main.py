@@ -8,7 +8,7 @@ from .database import engine, Base, SessionLocal
 from . import models
 from .models import User, AppSetting
 from .config import settings
-from .routers import auth, admin, media, recommendations
+from .routers import auth, admin, media, recommendations, users
 from .services.recommendations import generate_recommendations
 
 # Create tables
@@ -38,6 +38,7 @@ app.include_router(auth.router)
 app.include_router(admin.router)
 app.include_router(media.router)
 app.include_router(recommendations.router)
+app.include_router(users.router)
 
 
 @app.get("/api/health")

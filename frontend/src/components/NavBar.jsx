@@ -1,6 +1,8 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import Logo from './Logo'
 
+import ProfileDropdown from './ProfileDropdown'
+
 function NavBar() {
     const location = useLocation() // Triggers re-render on route change
     const navigate = useNavigate()
@@ -27,16 +29,8 @@ function NavBar() {
             </Link>
 
             <div className="nav-actions">
-                {token && (
-                    <>
-                        <Link to="/history" className="nav-link">History</Link>
-                        {user?.is_admin && (
-                            <Link to="/admin" className="nav-link">Admin</Link>
-                        )}
-                        <button onClick={handleLogout} className="btn-logout">
-                            Logout
-                        </button>
-                    </>
+                {token && user && (
+                    <ProfileDropdown user={user} onLogout={handleLogout} />
                 )}
             </div>
         </nav>

@@ -74,3 +74,8 @@ class HistoryItem(BaseModel):
 
 class HistoryResponse(BaseModel):
     history: list[HistoryItem]
+
+
+class UserSettings(BaseModel):
+    date_cutoff: int | None = None
+
