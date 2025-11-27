@@ -1,0 +1,603 @@
+<agentcom>
+    <session id="1">
+        <timestamp>2025-11-25T09:46:11+01:00</timestamp>
+        <agent>Antigravity</agent>
+        <status>In Progress</status>
+        <message>
+            Completed Task 1.1 (Project Initialization).
+            Created monorepo structure, initialized git, created README.md and .gitignore.
+            PRD is located at docs/specs.md.
+            Implementation plan is at docs/todo.md.
+            
+            Next Step: Task 1.2 (Backend Setup).
+            Plan:
+            1. Initialize FastAPI in /backend.
+            2. Create requirements.txt.
+            3. Implement GET /api/health.
+            4. Configure CORS.
+        </message>
+    </session>
+    <session id="44">
+        <timestamp>2025-11-25T15:40:00+01:00</timestamp>
+        <agent>Antigravity</agent>
+        <status>In Progress</status>
+        <message>
+            Implemented comprehensive action logging for Requests.
+
+            Actions:
+            - Updated `docs/specs.md` to include "Action Logging" (Requests = Rating 2) and "User History" requirements.
+            - Updated `docs/todo.md` with Task 4.4 (Logging) and Task 4.5 (History UI).
+            - Modified `backend/app/routers/media.py`:
+              - Updated `create_media_request` to accept a DB session.
+              - Added logic to insert a `UserPreference` record with `rating=2` (Super Like) immediately after a successful Overseerr request.
+
+            Impact:
+            - The AI now receives a strong positive signal when a user requests an item, improving future recommendations.
+            - This data is stored in `user_preferences` and will support the future "My History" feature.
+        </message>
+    </session>
+    <session id="45">
+        <timestamp>2025-11-25T15:50:00+01:00</timestamp>
+        <agent>Antigravity</agent>
+        <status>In Progress</status>
+        <message>
+            Cleaned up the Dashboard UI.
+
+            Actions:
+            - Added Task 4.6 (Dashboard Cleanup) to `docs/todo.md`.
+            - Modified `frontend/src/components/Dashboard.jsx` to remove the raw "Backend Status" JSON dump.
+            - The Dashboard now focuses solely on recommendations, providing a cleaner, consumer-ready interface.
+
+            Impact:
+            - Improved user experience by removing debug information from the main view.
+        </message>
+    </session>
+    <session id="46">
+        <timestamp>2025-11-25T16:00:00+01:00</timestamp>
+        <agent>Antigravity</agent>
+        <status>In Progress</status>
+        <message>
+            Implemented split recommendations for Movies and TV Series.
+
+            Backend:
+            - Updated `backend/app/schemas.py` to support `movies` and `tv` fields in `RecommendationsResponse`.
+            - Updated `backend/app/services/metadata.py` to support fetching metadata for both movies and TV shows.
+            - Updated `backend/app/services/recommendations.py` to:
+              - Split user history into movies and TV.
+              - Prompt the AI to generate separate categories for both types.
+              - Store the result in a structured JSON format.
+            - Updated `backend/app/routers/recommendations.py` to parse and enrich both lists.
+
+            Frontend:
+            - Updated `frontend/src/components/Dashboard.jsx` to include a "Movies" / "TV Series" toggle.
+            - Implemented state management to switch between the two lists.
+
+            Docs:
+            - Updated `docs/specs.md` and `docs/todo.md` to reflect this new feature.
+        </message>
+    </session>
+    <session id="47">
+        <timestamp>2025-11-25T16:10:00+01:00</timestamp>
+        <agent>Antigravity</agent>
+        <status>In Progress</status>
+        <message>
+            Updated PRD and Todo list with new feature requests (Design Only).
+
+            Docs Updated:
+            - `docs/specs.md`:
+              - Added "Documentaries" to the Dashboard tabs.
+              - Added "Smart Series Requesting" (default to first 3 seasons) to App Flow.
+              - Added "User Data Management" (History UI) to Core Features.
+            - `docs/todo.md`:
+              - Added Task 2.3b: Smart Series Requesting.
+              - Added Task 4.8: Documentary Support.
+              - Updated Task 4.5: User History & Data Management UI (detailed requirements).
+
+            Status:
+            - These features are now specified and planned but NOT yet implemented, as requested.
+        </message>
+    </session>
+    <session id="50">
+        <timestamp>2025-11-25T19:30:00+01:00</timestamp>
+        <agent>User/Antigravity</agent>
+        <status>Completed</status>
+        <message>
+            Manual synchronization with user changes.
+            
+            User Actions:
+            - Deployment: Updated docker-compose paths (/opt/sagarr/data) and network (saltbox).
+            - Security: Added AdminRoute protection and adult content filtering.
+            - Logic: Improved recommendation deduplication (watched/rated items).
+            - UI: Refined dashboard styling and layout.
+            
+            Agent Actions:
+            - Updated docs/todo.md to include Task 5.4 (Security &amp; Content Safety).
+            - Verified codebase state matches release requirements.
+        </message>
+    </session>
+    <session id="51">
+        <timestamp>2025-11-25T19:40:00+01:00</timestamp>
+        <agent>Antigravity</agent>
+        <status>Completed</status>
+        <message>
+            Updated Dashboard layout to vertical list view.
+
+            Actions:
+            - Modified  to change  to a vertical flex column.
+            - Styled  as a horizontal list item (Poster Left, Content Right).
+            - Updated  to filter out items with missing or "Unknown" titles.
+            - Cleaned up  to remove fallback title text.
+
+            Result:
+            - Recommendations are now presented as a clean, vertical feed of cards.
+            - Items without valid titles are suppressed.
+        </message>
+    </session>
+    <session id="52">
+        <timestamp>2025-11-25T19:45:00+01:00</timestamp>
+        <agent>Antigravity</agent>
+        <status>Completed</status>
+        <message>
+            Committed and pushed vertical layout changes.
+            
+            Commit: "UI: Switch Dashboard to vertical list layout"
+            Files:
+            - frontend/src/index.css
+            - frontend/src/components/RecommendationRow.jsx
+            - frontend/src/components/MediaCard.jsx
+        </message>
+    </session>
+    <session id="53">
+        <timestamp>2025-11-25T19:50:00+01:00</timestamp>
+        <agent>Antigravity</agent>
+        <status>Completed</status>
+        <message>
+            Fixed bug where 'Skip' and 'Rate' actions were not saving the correct media type.
+
+            Issue:
+            -  was not sending  in the  payload.
+            - Backend defaulted to "movie", causing TV shows to be stored as movies.
+            - This resulted in history items having incorrect metadata (or missing titles) because the backend tried to fetch TV IDs from the Movie API.
+
+            Fix:
+            - Updated  to explicitly pass  in .
+            - Committed and pushed the fix.
+        </message>
+    </session>
+    <session id="54">
+        <timestamp>2025-11-25T20:00:00+01:00</timestamp>
+        <agent>Antigravity</agent>
+        <status>Completed</status>
+        <message>
+            Updated AI prompt to generate a larger volume of recommendations.
+
+            Action:
+            - Modified  to explicitly request:
+              - 10-15 categories for Movies/TV.
+              - 5-8 categories for Documentaries.
+              - 5-10 items per category.
+            - Added instruction for "specific and niche" categories.
+
+            Goal:
+            - Create a "dead scrolling" / endless feed vibe for the user.
+        </message>
+    </session>
+    <session id="55">
+        <timestamp>2025-11-26T09:00:00+01:00</timestamp>
+        <agent>Antigravity</agent>
+        <status>Completed</status>
+        <message>
+            Fixed issue where rated/skipped items persisted in recommendations until the next cache refresh.
+
+            Issue:
+            -  relied on  stored in the *cached* JSON blob.
+            - New ratings/skips created *after* the cache was generated were ignored during filtering.
+
+            Fix:
+            - Updated  to fetch the *live* list of  IDs from the database on every request.
+            - Merged this live list with the cached list for robust deduplication.
+            - Imported  model to support this query.
+
+            Result:
+            - Items like "Fight Club" should disappear immediately after being rated or skipped, without waiting for a nightly refresh.
+        </message>
+    </session>
+    <session id="56">
+        <timestamp>2025-11-26T09:10:00+01:00</timestamp>
+        <agent>Antigravity</agent>
+        <status>Completed</status>
+        <message>
+            Fixed issue where navigation buttons (History, Admin, Logout) were not visible immediately after login.
+
+            Issue:
+            -  was checking  in its render method, but  does not re-render when  changes (e.g., after login redirect).
+            - The navigation bar was static and unaware of route changes.
+
+            Fix:
+            - Extracted navigation logic into a new  component ().
+            - Used  hook in  to force a re-render on every route change.
+            - Updated  to use the new  component inside the .
+
+            Result:
+            - Navigation buttons now appear instantly upon redirection to the dashboard after login.
+        </message>
+    </session>
+    <session id="57">
+        <timestamp>2025-11-26T14:40:00+01:00</timestamp>
+        <agent>Antigravity</agent>
+        <status>Completed</status>
+        <message>
+            Fixed issue where expired/invalid tokens caused a "Failed to load recommendations" error instead of redirecting to login.
+
+            Issue:
+            - If a user visited the dashboard with a stale token, the API returned 401.
+            - The frontend caught this error and simply displayed a generic error message.
+            - The user had to manually logout and login again to fix it.
+
+            Fix:
+            - Updated  to check for 401 status code in the error handler.
+            - If 401 is detected, automatically clear local storage and redirect to .
+
+            Result:
+            - Users with invalid sessions are now seamlessly redirected to the login page.
+        </message>
+    </session>
+    <session id="58">
+        <timestamp>2025-11-26T15:05:00+01:00</timestamp>
+        <agent>Antigravity</agent>
+        <status>Completed</status>
+        <message>
+            Committed and pushed UI fixes.
+
+            Commit: "UI: Fix navigation visibility and auto-logout on 401"
+            Files:
+            - frontend/src/App.jsx
+            - frontend/src/components/Dashboard.jsx
+            - frontend/src/components/NavBar.jsx
+
+            This resolves the issues with:
+            - Navigation buttons not appearing after login.
+            - Users getting stuck on "Failed to load" screens when their session expires.
+        </message>
+    <session id="60">
+        <timestamp>2025-11-26T15:20:00+01:00</timestamp>
+        <agent>Antigravity</agent>
+        <status>Completed</status>
+        <message>
+            Fixed issue where refreshing the page (F5) redirected logged-in users to the login page.
+
+            Issue:
+            -  was called inside  in .
+            -  runs *after* the initial render.
+            - The  component rendered *before* the auth token was set in Axios headers (or potentially before state could settle, though localStorage is synchronous).
+            - While  reading is synchronous, the race condition might have been in how the app initialized vs when the route guard checked validity.
+            - More likely: The  checks  directly, which should work. However, ensuring  runs *before* the component tree mounts guarantees global state (like Axios headers) is correct immediately.
+
+            Fix:
+            - Moved  outside of the  component function to the top level of the module.
+            - This ensures it runs immediately when the script loads, before any React components attempt to render or make API calls.
+
+            Result:
+            - The application now correctly recognizes the existing session from  immediately upon page reload.
+        </message>
+    </session>
+    <session id="61">
+        <timestamp>2025-11-26T15:25:00+01:00</timestamp>
+        <agent>Antigravity</agent>
+        <status>Completed</status>
+        <message>
+            Committed and pushed latest UI improvements.
+
+            Commit: "UI: Add TMDb links and fix F5 auth race condition"
+            Files:
+            - frontend/src/App.jsx
+            - frontend/src/components/MediaCard.jsx
+
+            This resolves:
+            - The request for external TMDb links.
+            - The issue where F5/refresh would sometimes redirect logged-in users to login.
+        </message>
+    </session>
+    <session id="62">
+        <timestamp>2025-11-26T15:35:00+01:00</timestamp>
+        <agent>Antigravity</agent>
+        <status>Completed</status>
+        <message>
+            Fixed "Failed to load recommendations" error for first-time users.
+
+            Issue:
+            - The recommendation engine raised a  if the user wasn't mapped to a Tautulli user ID (common for new users or if Tautulli is down).
+            - This caused the dashboard to error out completely.
+
+            Fix:
+            - Updated  to handle missing  gracefully.
+            - If no ID is found (or fetch fails), the system now defaults to an empty history.
+            - The AI will then generate generic/popular recommendations instead of crashing.
+
+            Result:
+            - New users now see a populated dashboard immediately upon login, even without prior watch history.
+        </message>
+    </session>
+    <session id="63">
+        <timestamp>2025-11-26T15:45:00+01:00</timestamp>
+        <agent>Antigravity</agent>
+        <status>Completed</status>
+        <message>
+            Improved reliability of Plex-to-Tautulli user mapping.
+
+            Issue:
+            - Some users were not being correctly mapped to their Tautulli history because of type mismatches (integer vs string) when comparing User IDs.
+            - This caused the recommendation engine to think they had no history, falling back to generic recommendations (or erroring out before the previous fix).
+
+            Fix:
+            - Updated  to normalize both Plex ID and Tautulli ID to strings before comparison.
+            - This ensures that even if one API returns an int and the other a string, the match is found.
+
+            Result:
+            - Users with valid history in Tautulli should now be correctly identified and receive personalized recommendations.
+        </message>
+    </session>
+    <session id="64">
+        <timestamp>2025-11-26T15:40:00+01:00</timestamp>
+        <agent>Antigravity</agent>
+        <status>Completed</status>
+        <message>
+            Committed and pushed backend fixes for first-time user experience.
+
+            Commit: "Fix: Improve first-time user experience and auth reliability"
+            Files:
+            - backend/app/routers/auth.py
+            - backend/app/services/recommendations.py
+
+            This resolves:
+            - Crashes when a user has no Tautulli history (or mapping fails).
+            - Unreliable user mapping due to ID type mismatches.
+        </message>
+    </session>
+    <session id="65">
+        <timestamp>2025-11-26T15:50:00+01:00</timestamp>
+        <agent>Antigravity</agent>
+        <status>Completed</status>
+        <message>
+            Fixed crash caused by malformed recommendation data from AI.
+
+            Issue:
+            - The AI occasionally returned a list of strings instead of a list of category objects (dictionaries).
+            - This caused an  when the backend tried to process the recommendations.
+
+            Fix:
+            - Updated  in  to strictly validate that each item in  is a dictionary.
+            - Malformed items (strings, numbers, etc.) are now silently skipped instead of crashing the request.
+
+            Result:
+            - The dashboard should now load successfully even if the AI returns imperfect data structure.
+        </message>
+    </session>
+    <session id="66">
+        <timestamp>2025-11-26T15:55:00+01:00</timestamp>
+        <agent>Antigravity</agent>
+        <status>Completed</status>
+        <message>
+            Committed and pushed fix for malformed AI responses.
+
+            Commit: "Fix: Handle malformed AI responses in recommendation enrichment"
+            Files:
+            - backend/app/routers/recommendations.py
+
+            This resolves the  crash seen in the logs.
+        </message>
+    </session>
+    <session id="67">
+        <timestamp>2025-11-26T16:00:00+01:00</timestamp>
+        <agent>Antigravity</agent>
+        <status>Completed</status>
+        <message>
+            Added a "Welcome" modal for first-time users.
+
+            Features:
+            - Automatically appears on the dashboard if the user hasn't seen it before.
+            - Explains how to use the site (Rate, Request, Seen).
+            - Supports English, Dutch, and German based on browser language.
+            - Includes a "Don't show this again" checkbox that persists the preference to .
+
+            Files:
+            - Created .
+            - Updated  to render the modal.
+            - Updated  with modal styles.
+        </message>
+    </session>
+    <session id="68">
+        <timestamp>2025-11-26T16:05:00+01:00</timestamp>
+        <agent>Antigravity</agent>
+        <status>Completed</status>
+        <message>
+            Committed and pushed Welcome Modal feature.
+
+            Commit: "UI: Add multi-language Welcome Modal for first-time users"
+            Files:
+            - frontend/src/components/Dashboard.jsx
+            - frontend/src/index.css
+            - frontend/src/components/WelcomeModal.jsx
+
+            This completes the user onboarding experience request.
+        </message>
+    </session>
+    <session id="69">
+        <timestamp>2025-11-26T16:10:00+01:00</timestamp>
+        <agent>Antigravity</agent>
+        <status>Completed</status>
+        <message>
+            Enhanced recommendation engine with random sampling and cache expiration.
+
+            Changes:
+            - Increased Tautulli history fetch limit from 300 to 1000 items.
+            - Implemented random sampling: The AI now receives 50 random movies and 20 random TV shows from the user's history (plus 10 recent items) instead of just the last 20. This reduces recency bias and improves variety.
+            - Added a 24-hour expiration policy to the recommendation cache. If the cache is older than 24 hours, it is automatically deleted and regenerated on the next request.
+
+            Files:
+            - backend/app/services/recommendations.py
+            - backend/app/routers/recommendations.py
+        </message>
+    </session>
+    <session id="70">
+        <timestamp>2025-11-26T16:15:00+01:00</timestamp>
+        <agent>Antigravity</agent>
+        <status>Completed</status>
+        <message>
+            Forced AI to generate documentary recommendations even without user history.
+
+            Issue:
+            - Users with no documentary watch history were receiving empty or very few documentary recommendations.
+            - This made the "Docs" tab feel broken or empty.
+
+            Fix:
+            - Updated the AI prompt in  to explicitly instruct the model to generate 5-8 categories of popular/high-quality documentaries (Nature, True Crime, etc.) if personal history is missing.
+            - This ensures the "Docs" tab is always populated, allowing users to start rating items and building their preference profile.
+        </message>
+    </session>
+    <session id="71">
+        <timestamp>2025-11-26T16:20:00+01:00</timestamp>
+        <agent>Antigravity</agent>
+        <status>Completed</status>
+        <message>
+            Committed and pushed recommendation engine enhancements.
+
+            Commit: "Enhance recommendation engine: random sampling, cache expiry, and forced docs"
+            Files:
+            - backend/app/routers/recommendations.py
+            - backend/app/services/recommendations.py
+
+            This resolves:
+            - Recency bias (via random sampling).
+            - Stale recommendations (via 24h cache expiry).
+            - Empty "Docs" tab for new users (via prompt engineering).
+        </message>
+    </session>
+    <session id="72">
+        <timestamp>2025-11-26T16:25:00+01:00</timestamp>
+        <agent>Antigravity</agent>
+        <status>Completed</status>
+        <message>
+            Updated Welcome Modal text to explicitly mention the "Skip" feature.
+
+            Changes:
+            - Modified  translations (EN, NL, DE).
+            - Added "⏭️ Skip" to Step 1.
+            - Updated the "Tip" to explain that skipping helps the AI learn what the user isn't interested in.
+
+            This clarifies the purpose of the Skip button for new users.
+        </message>
+    </session>
+    <session id="73">
+        <timestamp>2025-11-26T16:30:00+01:00</timestamp>
+        <agent>Antigravity</agent>
+        <status>Completed</status>
+        <message>
+            Updated Welcome Modal text to use thumbs down icon for Skip.
+
+            Changes:
+            - Modified  translations (EN, NL, DE).
+            - Replaced "⏭️ Skip" with "👎 Skip" to visually reinforce that skipping is a negative signal.
+            - Updated the "Tip" to include the (👎) icon.
+
+            This aligns the user's understanding with the backend logic (Skip = Dislike).
+        </message>
+    </session>
+    <session id="74">
+        <timestamp>2025-11-26T16:35:00+01:00</timestamp>
+        <agent>Antigravity</agent>
+        <status>Completed</status>
+        <message>
+            Committed and pushed Welcome Modal text updates.
+
+            Commit: "UI: Update Welcome Modal text to clarify Skip behavior"
+            Files:
+            - frontend/src/components/WelcomeModal.jsx
+
+            This ensures users understand that skipping is a negative feedback signal.
+        </message>
+    </session>
+    <session id="75">
+        <timestamp>2025-11-26T16:40:00+01:00</timestamp>
+        <agent>Antigravity</agent>
+        <status>Completed</status>
+        <message>
+            Added Statistics section to the Admin Dashboard.
+
+            Features:
+            - Displays total number of registered users.
+            - Displays total user interactions broken down by Likes, Dislikes, and Seen/Skipped.
+            - Shows a grand total of all interactions.
+
+            Files:
+            - : Added  endpoint.
+            - : Created  component and integrated it into the admin page.
+        </message>
+    </session>
+    <session id="76">
+        <timestamp>2025-11-26T16:45:00+01:00</timestamp>
+        <agent>Antigravity</agent>
+        <status>Completed</status>
+        <message>
+            Committed and pushed Admin Statistics feature.
+
+            Commit: "Feat: Add Statistics section to Admin Dashboard"
+            Files:
+            - backend/app/routers/admin.py
+            - frontend/src/components/AdminSettings.jsx
+
+            This provides admins with visibility into user engagement and system usage.
+        </message>
+    </session>
+    <session id="77">
+        <timestamp>2025-11-26T16:50:00+01:00</timestamp>
+        <agent>Antigravity</agent>
+        <status>Completed</status>
+        <message>
+            Enhanced Admin Statistics with per-user details.
+
+            Features:
+            - Added a collapsible "User Activity Details" section.
+            - Displays a table of all users with their individual Like, Dislike, and Seen counts.
+            - Sorted by total activity level.
+
+            Files:
+            - : Updated  to include .
+            - : Implemented  component.
+        </message>
+    </session>
+    <session id="78">
+        <timestamp>2025-11-27T09:15:00+01:00</timestamp>
+        <agent>Antigravity</agent>
+        <status>Completed</status>
+        <message>
+            Implemented User Settings and Profile Dropdown.
+
+            Features:
+            - Added  JSON column to  table (via migration).
+            - Created  endpoints (GET/POST).
+            - Updated Recommendation Engine to respect  from user settings.
+            - Replaced "Logout" button with a "Profile Dropdown" in the NavBar.
+            - Added "User Settings" page where users can set a "Date Cutoff" year.
+
+            Files:
+            - , , 
+            - 
+            - , 
+            - , 
+        </message>
+    </session>
+    <session id="79">
+        <timestamp>2025-11-27T09:20:00+01:00</timestamp>
+        <agent>Antigravity</agent>
+        <status>Completed</status>
+        <message>
+            Resolved confusion regarding `docs/agentcom.xml` and `.gitignore`.
+
+            Action:
+            - Commented out `docs/agentcom.xml` in `.gitignore`.
+            - This allows the agent communication log to be tracked by git, ensuring session history is preserved across commits and pulls.
+            - Previously, it was being ignored, which caused issues with tools trying to read/write it if it was considered "ignored" by the system.
+        </message>
+    </session>
+</agentcom>
